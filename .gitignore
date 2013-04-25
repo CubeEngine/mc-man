@@ -32,3 +32,9 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# IntelliJ IDEA with python plugin/ pyCharm
+*.iml
+*.ipr
+*.iws
+.idea/

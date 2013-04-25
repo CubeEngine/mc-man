@@ -1,13 +1,13 @@
 from distutils.core import setup
 
 setup(
-    name= 'plugman',
-    version= '0.1',
-    author= 'totokaka',
-    author_email= 'ttotokaka@gmail.com',
-    description= 'A bukkit plugin manager written in Python 3',
-    url= 'https://github.com/CubeEngineDev/PlugMan',
-    packages= ['plugman', 'bukget'],
+    name='plugman',
+    version='0.1',
+    author='totokaka',
+    author_email='ttotokaka@gmail.com',
+    description='A bukkit plugin manager written in Python 3',
+    url='https://github.com/CubeEngineDev/PlugMan',
+    packages=['plugman', 'bukget'],
     scripts=["bin/plugman"],
     classifiers=[
         'Programming Language :: Python',
