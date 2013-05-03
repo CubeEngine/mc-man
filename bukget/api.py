@@ -34,7 +34,7 @@ def get_slug(name):
     return None
 
 
-def get_plugin(slug, size=5, fields="-logo_full,-server,-logo,-main,-versions.commands,-versions.permissions,-versions.changelog,-versions.status,-versions.dbo_version,-versions.slug"):
+def get_plugin(slug, size=100, fields="-logo_full,-server,-logo,-main,-versions.commands,-versions.permissions,-versions.changelog,-versions.status,-versions.dbo_version,-versions.slug"):
     """ Create a Plugin object from Bukget or return the already created object
     """
     if plugins.get(slug, None):

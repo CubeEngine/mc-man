@@ -68,9 +68,32 @@ class Plugin(object):
             for version_json in self.json_object.get('versions', None):
                 version = Version(version_json)
                 self.versions[version.number] = version
-            for version in self.versions:
-                if self.versions[version].type == "Release":
-                    self.newest_version = self.versions[version]
+            
+            try:
+                response = urlopen(PLUGIN_URL + slug + "/release" + "?" + urlencode({"fields": "versions.version,versions.type"}))
+                json_object = json.loads(response.readall().decode("utf-8"))
+                self.newest_version = self.versions[json_object['versions'][0]['version']]
+            except Exception as ex:
+                # print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "release", type(ex), ex))
+                try:
+                    response = urlopen(PLUGIN_URL + slug + "/beta" + "?" + urlencode({"fields": "versions.version,versions.type"}))
+                    json_object = json.loads(response.readall().decode("utf-8"))
+                    self.newest_version = self.versions[json_object['versions'][0]['version']]
+                except Exception as ex1:
+                    #print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "beta", type(ex1), ex1))
+                    try:
+                        response = urlopen(PLUGIN_URL + slug + "/alpha" + "?" + urlencode({"fields": "versions.version,versions.type"}))
+                        json_object = json.loads(response.readall().decode("utf-8"))
+                        self.newest_version = self.versions[json_object['versions'][0]['version']]
+                    except Exception as ex2:
+                        print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "alpha", type(ex2), ex2))
+                        try:
+                            response = urlopen(PLUGIN_URL + slug + "/latest" + "?" + urlencode({"fields": "versions.version,versions.type"}))
+                            json_object = json.loads(response.readall().decode("utf-8"))
+                            self.newest_version = self.versions[json_object['versions'][0]['version']]
+                        except Exception as ex3:
+                            #print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "latest", type(ex3), ex3))
+                            print("No version found for %s!" % self.name)
 
     def get_hard_dependencies(self, hard_dependencies=True, version=None):
         if version is None:

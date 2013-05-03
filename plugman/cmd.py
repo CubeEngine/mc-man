@@ -1,4 +1,4 @@
-import bukget.api
+import bukget.api, bukget.utils
 import argparse, plugman.utils
 
 verbose = False
@@ -73,12 +73,61 @@ def download(args):
     if not plugman.utils.confirm(prompt_str="Are you sure you want to install them?"):
         exit(0)
     for plugin in to_install:
-        print("Pretending to install %s" % plugin.name)
+        plugman.utils.download(plugin)
     print("Done!")
      
 
 def update(args):
-    pass
+    print("Checking plugins...")
+    to_update = set()
+    for plugin in plugman.utils.get_all_plugins_cwd():
+        if not args.plugins[0].lower == "all":
+            _continue = True
+            for name in args.plugins:
+                if bukget.utils.levenshtein(name.lower(), plugin.name.lower()) < 3:
+                    _continue = False
+                    break
+            if _continue:
+                continue
+        if not hasattr(plugin, "local_version"):
+            to_update.add(plugin)
+            continue
+        if plugin.local_version.number != plugin.newest_version.number:
+            to_update.add(plugin)
+    if len(to_update) < 1:
+        print("Found no plugins to update!")
+        exit(0)
+    print("These plugins will be updated:")
+    names_local_newest_version = {} # should contain tuples with three values
+    
+    
+    longest_name = 0
+    longest_version = 0
+    for plugin in to_update:
+        if len(plugin.name) > longest_name:
+            longest_name = len(plugin.name)
+        if hasattr(plugin, "local_version"):
+            local_version = plugin.local_version.number
+        else:
+            local_version = "custom"
+        if len(local_version) > longest_version:
+            longest_version = len(local_version)
+        names_local_newest_version[plugin] = (plugin.name, local_version, plugin.newest_version.number)
+                                            
+    for plugin, (name, local_version, newest_version) in names_local_newest_version.items():
+        new_name = name + ':' + ' ' * (longest_name - len(name))
+        new_version = local_version + ' ' * (longest_version - len(local_version))
+        names_local_newest_version[plugin] = (new_name, new_version, newest_version)
+        
+        
+    for plugin, (name, local_version, newest_version) in names_local_newest_version.items():
+        print("%s current version: %s\tnewest release: %s" % (name, local_version, newest_version))
+        
+    if not plugman.utils.confirm(prompt_str="Are you sure you want to update these plugins?"):
+        exit(0)
+    for plugin in to_update:
+        plugman.utils.download(plugin)
+    print("Done!")
 
 def remove(args):
     pass
