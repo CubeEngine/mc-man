@@ -131,7 +131,7 @@ def update(args):
 
 def remove(args):
     pass
-
+            
 def info(args):
     for plugin_name in args.plugins:
         slug = bukget.api.get_slug(plugin_name)

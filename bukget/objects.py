@@ -1,5 +1,10 @@
-from urllib.request import urlopen
-from urllib.parse import urlencode
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlencode
+except:
+    #Someone is using python2
+    from urllib import urlopen
+    from urllib import urlencode
 from base64 import b64decode
 from datetime import datetime
 import json, bukget.api, bukget.exceptions
@@ -40,7 +45,7 @@ class Plugin(object):
         query = PLUGIN_URL + slug + "?" + urlencode({'fields': fields, 
                            'size': str(size)})
         response = urlopen(query)
-        self.json_object = json.loads(response.readall().decode("utf-8"))
+        self.json_object = json.loads(response.read().decode("utf-8"))
         
         if self.json_object is None or len(self.json_object) < 1:
             raise bukget.exceptions.NotFound("Could not find %s on BukGet!" % slug)
@@ -71,25 +76,25 @@ class Plugin(object):
             
             try:
                 response = urlopen(PLUGIN_URL + slug + "/release" + "?" + urlencode({"fields": "versions.version,versions.type"}))
-                json_object = json.loads(response.readall().decode("utf-8"))
+                json_object = json.loads(response.read().decode("utf-8"))
                 self.newest_version = self.versions[json_object['versions'][0]['version']]
             except Exception as ex:
                 # print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "release", type(ex), ex))
                 try:
                     response = urlopen(PLUGIN_URL + slug + "/beta" + "?" + urlencode({"fields": "versions.version,versions.type"}))
-                    json_object = json.loads(response.readall().decode("utf-8"))
+                    json_object = json.loads(response.read().decode("utf-8"))
                     self.newest_version = self.versions[json_object['versions'][0]['version']]
                 except Exception as ex1:
                     #print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "beta", type(ex1), ex1))
                     try:
                         response = urlopen(PLUGIN_URL + slug + "/alpha" + "?" + urlencode({"fields": "versions.version,versions.type"}))
-                        json_object = json.loads(response.readall().decode("utf-8"))
+                        json_object = json.loads(response.read().decode("utf-8"))
                         self.newest_version = self.versions[json_object['versions'][0]['version']]
                     except Exception as ex2:
                         print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "alpha", type(ex2), ex2))
                         try:
                             response = urlopen(PLUGIN_URL + slug + "/latest" + "?" + urlencode({"fields": "versions.version,versions.type"}))
-                            json_object = json.loads(response.readall().decode("utf-8"))
+                            json_object = json.loads(response.read().decode("utf-8"))
                             self.newest_version = self.versions[json_object['versions'][0]['version']]
                         except Exception as ex3:
                             #print("Error! plugin: %s channel: %s type: %s, message: %s" % (self.name, "latest", type(ex3), ex3))
