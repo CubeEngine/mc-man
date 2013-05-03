@@ -24,3 +24,20 @@ def get_plugin_from_jar(jarfile):
         plugin.local_version = plugin.versions[plugininfo['version']]
         plugin.local_file = jarfile.name
         return plugin
+        
+# Modified from this: http://log.brandonthomson.com/2011/01/python-console-prompt-yesno.html
+def confirm(prompt_str="Confirm", default=True):
+    fmt = (prompt_str, 'Y', 'n') if default else (prompt_str, 'y', 'N')
+    prompt = '%s [%s/%s]: ' % fmt
+ 
+    while True:
+        ans = input(prompt).lower()
+        if ans == '':
+            return default
+        elif ans == 'y':
+            return True
+        elif ans == 'n':
+            return False
+        else:
+            print('Please enter y or n.')
+
