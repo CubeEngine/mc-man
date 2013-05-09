@@ -7,7 +7,7 @@ setup(
     author_email='ttotokaka@gmail.com',
     description='A bukkit plugin manager written in Python 3',
     url='https://github.com/CubeEngineDev/PlugMan',
-    packages=['plugman', 'bukget'],
+    packages=['plugman'],
     scripts=["bin/plugman"],
     classifiers=[
         'Programming Language :: Python',

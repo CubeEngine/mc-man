@@ -1,5 +1,5 @@
 import os
-from bukget.api import get_slug, get_plugin
+from pybukget import find_slug, plugin_details
 import zipfile, bukget.api, yaml
 
 
@@ -22,7 +22,7 @@ def get_plugin_from_jar(jarfile):
             raise MissingPluginYml("%s Does not contain a file name plugin.yml" 
                 % jarfile)
         plugininfo = yaml.load(plugin_file.open("plugin.yml"))
-        plugin = get_plugin(get_slug(plugininfo['name']))
+        plugin = plugin_details('bukkit', find_slug('bukkit', plugininfo['name']))
         version_number = plugininfo['version']
         plugin.local_version = plugin.versions[version_number]
         plugin.local_file = jarfile
@@ -41,8 +41,8 @@ def get_all_plugins_cwd():
     
 def download(plugin, version=None):
     if version == None:
-        version = plugin.newest_version
-    print("Pretending to download %s" % plugin.name)
+        version = plugin.versions[0]
+    print("Pretending to download %s" % plugin.plugin_name)
     
 # Modified from this: http://log.brandonthomson.com/2011/01/python-console-prompt-yesno.html
 def confirm(prompt_str="Confirm", default=True):

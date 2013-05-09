@@ -1,4 +1,4 @@
-import bukget.api, bukget.utils
+import pybukget as bukget
 import argparse, plugman.utils
 
 verbose = False
@@ -15,6 +15,25 @@ Website:            %s
 Hard dependencies:  %s
 Soft dependencies:  %s
 """
+
+def _levenshtein(s1, s2):
+    """ Get the levenshtein edit distance between two strings
+    """
+    if len(s1) < len(s2):
+        return levenshtein(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    previous_row = range(len(s2) + 1)
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[
+                             j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    return previous_row[-1]
 
 def main():
     parser = argparse.ArgumentParser()
@@ -59,17 +78,19 @@ def download(args):
     print("Calculating which plugins to install...")
     to_install = set()
     for plugin_name in args.plugins:
-        slug = bukget.api.get_slug(plugin_name)
+        slug = bukget.find_slug('bukkit', plugin_name)
         if slug is None or len(slug) < 1:
             print("Could not find %s on BukGet!" % plugin_name)
             continue
-        plugin = bukget.api.get_plugin(slug, size=1)
+        plugin = bukget.plugin_details('bukkit', slug, size=1)
         if plugin is None:
             print("Could not find %s on BukGet!" % plugin_name)
             continue
         to_install.add(plugin)
-        to_install = to_install.union(plugin.get_hard_dependencies())
-    print("These plugins will be installed: " + " ".join([i.name for i in to_install]))
+        to_install = to_install.union([bukget.plugin_details('bukkit', 
+                                        bukget.find_slug('bukkit', p)) for p in 
+                                        plugin.versions[0].hard_dependencies])
+    print("These plugins will be installed: " + ", ".join([i.plugin_name for i in to_install]))
     if not plugman.utils.confirm(prompt_str="Are you sure you want to install them?"):
         exit(0)
     for plugin in to_install:
@@ -84,7 +105,7 @@ def update(args):
         if not args.plugins[0].lower == "all":
             _continue = True
             for name in args.plugins:
-                if bukget.utils.levenshtein(name.lower(), plugin.name.lower()) < 3:
+                if _levenshtein(name.lower(), plugin.name.lower()) < 3:
                     _continue = False
                     break
             if _continue:
@@ -130,22 +151,23 @@ def update(args):
     print("Done!")
 
 def remove(args):
-    pass
+    pass # TODO
+                
             
 def info(args):
     for plugin_name in args.plugins:
-        slug = bukget.api.get_slug(plugin_name)
+        slug = bukget.find_slug('bukkit', plugin_name)
         if slug is None or len(slug) < 1:
             print("Could not find %s on BukGet!" % plugin_name)
             continue
-        plugin = bukget.api.get_plugin(slug, size=1)
+        plugin = bukget.plugin_details('bukkit', slug, size=1)
         if plugin is None:
             print("Could not find %s on BukGet!" % plugin_name)
             continue
         
-        print (plugin_info_message % (plugin.name, plugin.newest_version.number,
+        print (plugin_info_message % (plugin.plugin_name, plugin.versions[0].version,
                 ", ".join(plugin.authors), 
                 ", ".join(plugin.categories), plugin.website, 
-                ", ".join(plugin.newest_version.hard_dependencies), 
-                ", ".join(plugin.newest_version.soft_dependencies)))
+                ", ".join(plugin.versions[0].hard_dependencies), 
+                ", ".join(plugin.versions[0].soft_dependencies)))
 
