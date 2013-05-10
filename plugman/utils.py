@@ -1,5 +1,5 @@
-import os
-from pybukget import find_slug, plugin_details
+import os, sys, traceback
+from bukget import find_slug, plugin_details
 import zipfile, bukget.api, yaml
 
 
@@ -10,6 +10,16 @@ class NotZipFile(Exception):
 class MissingPluginYml(Exception):
     pass
 
+def get_best_version(plugin):
+    ''' Get the newest release verions of the plugin
+    If no release version is found It'll go over to Beta, then Alpha then just
+    latest
+    '''
+    for version_type in ['Release', 'Beta', 'Alpha']:
+        for version in plugin.versions:
+            if version.type == version_type:
+                return version
+    return plugin.versions[0]
 
 def get_plugin_from_jar(jarfile):
     """ Get the plugin from the jar file
@@ -22,9 +32,12 @@ def get_plugin_from_jar(jarfile):
             raise MissingPluginYml("%s Does not contain a file name plugin.yml" 
                 % jarfile)
         plugininfo = yaml.load(plugin_file.open("plugin.yml"))
-        plugin = plugin_details('bukkit', find_slug('bukkit', plugininfo['name']))
+        slug = find_slug('bukkit', plugininfo['name'])
+        plugin = plugin_details('bukkit', slug)
         version_number = plugininfo['version']
-        plugin.local_version = plugin.versions[version_number]
+        for version in plugin.versions:
+            if version.version == version_number:
+                plugin.local_version = version
         plugin.local_file = jarfile
         return plugin
 
@@ -36,8 +49,11 @@ def get_all_plugins_cwd():
         try:
             plugin = get_plugin_from_jar(plugin_filename)
             yield plugin
-        except Exception as ex:
+        except Exception:
             pass
+            #exc_type, exc_value, exc_traceback = sys.exc_info()
+            #traceback.print_exception(exc_type, exc_value, exc_traceback,
+            #                  limit=2, file=sys.stdout)
     
 def download(plugin, version=None):
     if version == None:

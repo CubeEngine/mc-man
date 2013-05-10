@@ -1,4 +1,5 @@
-import pybukget as bukget
+import bukget
+from plugman.utils import get_best_version
 import argparse, plugman.utils
 
 verbose = False
@@ -20,7 +21,7 @@ def _levenshtein(s1, s2):
     """ Get the levenshtein edit distance between two strings
     """
     if len(s1) < len(s2):
-        return levenshtein(s2, s1)
+        return _levenshtein(s2, s1)
     if len(s2) == 0:
         return len(s1)
     previous_row = range(len(s2) + 1)
@@ -89,7 +90,7 @@ def download(args):
         to_install.add(plugin)
         to_install = to_install.union([bukget.plugin_details('bukkit', 
                                         bukget.find_slug('bukkit', p)) for p in 
-                                        plugin.versions[0].hard_dependencies])
+                                        get_best_version(plugin).hard_dependencies])
     print("These plugins will be installed: " + ", ".join([i.plugin_name for i in to_install]))
     if not plugman.utils.confirm(prompt_str="Are you sure you want to install them?"):
         exit(0)
@@ -102,10 +103,10 @@ def update(args):
     print("Checking plugins...")
     to_update = set()
     for plugin in plugman.utils.get_all_plugins_cwd():
-        if not args.plugins[0].lower == "all":
+        if not args.plugins[0].lower() == "all":
             _continue = True
             for name in args.plugins:
-                if _levenshtein(name.lower(), plugin.name.lower()) < 3:
+                if _levenshtein(name.lower(), plugin.plugin_name.lower()) < 3:
                     _continue = False
                     break
             if _continue:
@@ -113,27 +114,27 @@ def update(args):
         if not hasattr(plugin, "local_version"):
             to_update.add(plugin)
             continue
-        if plugin.local_version.number != plugin.newest_version.number:
+        if plugin.local_version.version != get_best_version(plugin).version:
             to_update.add(plugin)
     if len(to_update) < 1:
         print("Found no plugins to update!")
         exit(0)
     print("These plugins will be updated:")
+    
+    
     names_local_newest_version = {} # should contain tuples with three values
-    
-    
     longest_name = 0
     longest_version = 0
     for plugin in to_update:
-        if len(plugin.name) > longest_name:
-            longest_name = len(plugin.name)
+        if len(plugin.plugin_name) > longest_name:
+            longest_name = len(plugin.plugin_name)
         if hasattr(plugin, "local_version"):
-            local_version = plugin.local_version.number
+            local_version = plugin.local_version.version
         else:
             local_version = "custom"
         if len(local_version) > longest_version:
             longest_version = len(local_version)
-        names_local_newest_version[plugin] = (plugin.name, local_version, plugin.newest_version.number)
+        names_local_newest_version[plugin] = (plugin.plugin_name, local_version, get_best_version(plugin).version)
                                             
     for plugin, (name, local_version, newest_version) in names_local_newest_version.items():
         new_name = name + ':' + ' ' * (longest_name - len(name))
@@ -165,9 +166,9 @@ def info(args):
             print("Could not find %s on BukGet!" % plugin_name)
             continue
         
-        print (plugin_info_message % (plugin.plugin_name, plugin.versions[0].version,
+        print (plugin_info_message % (plugin.plugin_name, get_best_version(plugin).version,
                 ", ".join(plugin.authors), 
                 ", ".join(plugin.categories), plugin.website, 
-                ", ".join(plugin.versions[0].hard_dependencies), 
-                ", ".join(plugin.versions[0].soft_dependencies)))
+                ", ".join(get_best_version(plugin).hard_dependencies), 
+                ", ".join(get_best_version(plugin).soft_dependencies)))
 
