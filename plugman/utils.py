@@ -58,7 +58,25 @@ def get_all_plugins_cwd():
 def download(plugin, version=None):
     if version == None:
         version = plugin.versions[0]
-    print("Pretending to download %s" % plugin.plugin_name)
+    remote_filename = version.filename
+    if hasattr(plugin, local_file):
+        local_filename = plugin.local_file;
+    else:
+        for p in get_all_plugins_cwd():
+            if p.slug == plugin.slug:
+                local_filename = p.local_file
+                break
+        if not 'local_filename' in locals():
+            local_filename = plugin.plugin_name+'.jar'
+        
+    if remote_filename.endswith('.jar'):
+        print("Pretending to download %s version %s. It's a jar file!" % (plugin.plugin_name, version.version))
+    elif remote_filename.endswith('.zip'):
+        print("Pretending to download %s version %s. It's a zip file!" % (plugin.plugin_name, version.version))
+    elif remote_filename.endswith('.rar'):
+        print("Pretending to download %s version %s. It's a rar file!" % (plugin.plugin_name, version.version))
+    else:
+        print("Pretending to download %s version %s. It's a uknown filetype!" % (plugin.plugin_name, version.version))
     
 # Modified from this: http://log.brandonthomson.com/2011/01/python-console-prompt-yesno.html
 def confirm(prompt_str="Confirm", default=True):
