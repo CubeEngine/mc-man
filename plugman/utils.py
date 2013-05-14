@@ -83,7 +83,7 @@ def download(plugin, version=None):
         print("Downloaded %s version %s to file %s" % (plugin.plugin_name, get_best_version(plugin).version, local_filename))
         with zipfile.ZipFile(local_filename+'.zip') as zipped_plugin:
             for member in zipped_plugin.namelist():
-                if member.contains('/') or member.endswith('.jar'):
+                if '/' in member or member.endswith('.jar'):
                     zipped_plugin.extract(member)
         print("Extracted the zip archive")
     else:
