@@ -152,8 +152,7 @@ def update(args):
     print("Done!")
 
 def remove(args):
-    pass # TODO
-                
+    print("Not yet implemented, but what is the need really?")         
             
 def info(args):
     for plugin_name in args.plugins:

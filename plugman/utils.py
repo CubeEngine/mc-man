@@ -1,5 +1,5 @@
 import os, sys, traceback
-from bukget import find_slug, plugin_details
+from bukget import find_slug, plugin_details, plugin_download
 import zipfile, bukget.api, yaml
 
 
@@ -59,24 +59,35 @@ def download(plugin, version=None):
     if version == None:
         version = plugin.versions[0]
     remote_filename = version.filename
-    if hasattr(plugin, local_file):
+    if hasattr(plugin, 'local_file'):
         local_filename = plugin.local_file;
     else:
         for p in get_all_plugins_cwd():
             if p.slug == plugin.slug:
+                plugin.local_file = p.local_file
                 local_filename = p.local_file
                 break
         if not 'local_filename' in locals():
             local_filename = plugin.plugin_name+'.jar'
         
     if remote_filename.endswith('.jar'):
-        print("Pretending to download %s version %s. It's a jar file!" % (plugin.plugin_name, version.version))
+        with open(local_filename, 'wb') as jarfile:
+            jarfile.write(plugin_download('bukkit', plugin.slug, get_best_version(plugin).version))
+        print("Downloaded %s version %s to file %s" % (plugin.plugin_name, get_best_version(plugin).version, local_filename))
     elif remote_filename.endswith('.zip'):
-        print("Pretending to download %s version %s. It's a zip file!" % (plugin.plugin_name, version.version))
-    elif remote_filename.endswith('.rar'):
-        print("Pretending to download %s version %s. It's a rar file!" % (plugin.plugin_name, version.version))
+        with open(local_filename+'.zip', 'wb') as zipped_plugin:
+            zipped_plugin.write(plugin_download('bukkit', plugin.slug, get_best_version(plugin).version))
+        if not zipfile.is_zipfile(local_filename+'.zip'):
+            print("Downloaded an zip file for %s that was invalid, aborting...")
+            return   
+        print("Downloaded %s version %s to file %s" % (plugin.plugin_name, get_best_version(plugin).version, local_filename))
+        with zipfile.ZipFile(local_filename+'.zip') as zipped_plugin:
+            for member in zipped_plugin.namelist():
+                if member.contains('/') or member.endswith('.jar'):
+                    zipped_plugin.extract(member)
+        print("Extracted the zip archive")
     else:
-        print("Pretending to download %s version %s. It's a uknown filetype!" % (plugin.plugin_name, version.version))
+        print("Could not download %s version %s. It's a uknown filetype!" % (plugin.plugin_name, version.version))
     
 # Modified from this: http://log.brandonthomson.com/2011/01/python-console-prompt-yesno.html
 def confirm(prompt_str="Confirm", default=True):
