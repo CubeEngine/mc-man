@@ -1,7 +1,7 @@
 import os, sys, traceback
-from bukget import find_slug, plugin_details, plugin_download
 import zipfile, bukget.api, yaml
-
+import bukget.api as bkapi
+import bukget.orm as bkorm
 
 class NotZipFile(Exception):
     pass
@@ -23,21 +23,22 @@ def get_best_version(plugin):
 
 def get_plugin_from_jar(jarfile):
     """ Get the plugin from the jar file
-        jarfile should be a string
+        jarfile should be a string with the path to the file
     """
     if not zipfile.is_zipfile(jarfile):
-        raise NotZipFile("%s is not a zip file!" % jarfile)
+        raise NotZipFile("{} is not a zip file!".format(jarfile))
     with zipfile.ZipFile(jarfile) as plugin_file:
         if not "plugin.yml" in plugin_file.namelist():
-            raise MissingPluginYml("%s Does not contain a file name plugin.yml" 
-                % jarfile)
+            raise MissingPluginYml("{} Does not contain a file name plugin.yml".format(jarfile))
         plugininfo = yaml.load(plugin_file.open("plugin.yml"))
-        slug = find_slug('bukkit', plugininfo['name'])
-        plugin = plugin_details('bukkit', slug)
+        slug = bkapi.find_by_name('bukkit', plugininfo['name'])
+        plugin = bkorm.plugin_details('bukkit', slug)
         version_number = plugininfo['version']
         for version in plugin.versions:
             if version.version == version_number:
                 plugin.local_version = version
+        if not hasattr(plugin, 'local_version'):
+            plugin.local_version = None
         plugin.local_file = jarfile
         return plugin
 
@@ -51,13 +52,10 @@ def get_all_plugins_cwd():
             yield plugin
         except Exception:
             pass
-            #exc_type, exc_value, exc_traceback = sys.exc_info()
-            #traceback.print_exception(exc_type, exc_value, exc_traceback,
-            #                  limit=2, file=sys.stdout)
     
 def download(plugin, version=None):
     if version == None:
-        version = plugin.versions[0]
+        version = get_best_version(plugin)
     remote_filename = version.filename
     if hasattr(plugin, 'local_file'):
         local_filename = plugin.local_file;
@@ -72,22 +70,23 @@ def download(plugin, version=None):
         
     if remote_filename.endswith('.jar'):
         with open(local_filename, 'wb') as jarfile:
-            jarfile.write(plugin_download('bukkit', plugin.slug, get_best_version(plugin).version))
-        print("Downloaded %s version %s to file %s" % (plugin.plugin_name, get_best_version(plugin).version, local_filename))
+            jarfile.write(bkapi.plugin_download('bukkit', plugin.slug, get_best_version(plugin).version))
+        print("Downloaded {}, version {}, to file {}".format(plugin.plugin_name, get_best_version(plugin).version, local_filename))
     elif remote_filename.endswith('.zip'):
         with open(local_filename+'.zip', 'wb') as zipped_plugin:
-            zipped_plugin.write(plugin_download('bukkit', plugin.slug, get_best_version(plugin).version))
+            zipped_plugin.write(bkapi.plugin_download('bukkit', plugin.slug, get_best_version(plugin).version))
         if not zipfile.is_zipfile(local_filename+'.zip'):
             print("Downloaded an zip file for %s that was invalid, aborting...")
             return   
-        print("Downloaded %s version %s to file %s" % (plugin.plugin_name, get_best_version(plugin).version, local_filename))
+        print("Downloaded {}, version {}, to file {}".format(plugin.plugin_name, get_best_version(plugin).version, local_filename))
         with zipfile.ZipFile(local_filename+'.zip') as zipped_plugin:
             for member in zipped_plugin.namelist():
                 if '/' in member or member.endswith('.jar'):
                     zipped_plugin.extract(member)
+        os.remove(local_filename+'.zip')
         print("Extracted the zip archive")
     else:
-        print("Could not download %s version %s. It's a uknown filetype!" % (plugin.plugin_name, version.version))
+        print("Could not download {}, version {}. It's a uknown filetype!".format(plugin.plugin_name, version.version))
     
 # Modified from this: http://log.brandonthomson.com/2011/01/python-console-prompt-yesno.html
 def confirm(prompt_str="Confirm", default=True):

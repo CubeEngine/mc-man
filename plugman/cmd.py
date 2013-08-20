@@ -1,4 +1,5 @@
-import bukget
+from bukget import api as bkapi
+from bukget import orm as bkorm
 from plugman.utils import get_best_version
 import argparse, plugman.utils
 
@@ -45,8 +46,6 @@ def main():
                         plugin(s)", action="store_true")
     group.add_argument("-U", "--Update", help="Update the plugin(s)", 
                        action="store_true")
-    group.add_argument("-R", "--Remove", help="Remove the plugin(s)", 
-                       action="store_true")
     group.add_argument("-I", "--Info", help="Get info about the plugin(s)", 
                        action="store_true")
     parser.add_argument("--verbose", help="increase output verbosity", 
@@ -68,8 +67,6 @@ def main():
         download(args)
     elif args.Update:
         update(args)
-    elif args.Remove:
-        remove(args)
     elif args.Info:
         info(args)
     else:
@@ -79,18 +76,20 @@ def download(args):
     print("Calculating which plugins to install...")
     to_install = set()
     for plugin_name in args.plugins:
-        slug = bukget.find_slug('bukkit', plugin_name)
+        slug = bkapi.find_by_name('bukkit', plugin_name)
         if slug is None or len(slug) < 1:
-            print("Could not find %s on BukGet!" % plugin_name)
+            print("Could not find {} on BukGet!".format(plugin_name))
             continue
-        plugin = bukget.plugin_details('bukkit', slug, size=1)
+        plugin = bkorm.plugin_details('bukkit', slug, size=10)
         if plugin is None:
-            print("Could not find %s on BukGet!" % plugin_name)
+            print("Could not find {} on BukGet!".format(plugin_name))
             continue
         to_install.add(plugin)
-        to_install = to_install.union([bukget.plugin_details('bukkit', 
-                                        bukget.find_slug('bukkit', p)) for p in 
+        to_install = to_install.union([bkorm.plugin_details('bukkit', 
+                                        bkapi.find_by_name('bukkit', p)) for p in 
                                         get_best_version(plugin).hard_dependencies])
+    if len(to_install) < 1:
+        print("No plugins to install")
     print("These plugins will be installed: " + ", ".join([i.plugin_name for i in to_install]))
     if not plugman.utils.confirm(prompt_str="Are you sure you want to install them?"):
         exit(0)
@@ -143,26 +142,23 @@ def update(args):
         
         
     for plugin, (name, local_version, newest_version) in names_local_newest_version.items():
-        print("%s current version: %s\tnewest release: %s" % (name, local_version, newest_version))
+        print("{} current version: {}\tnewest release: {}".format(name, local_version, newest_version))
         
     if not plugman.utils.confirm(prompt_str="Are you sure you want to update these plugins?"):
         exit(0)
     for plugin in to_update:
         plugman.utils.download(plugin)
-    print("Done!")
-
-def remove(args):
-    print("Not yet implemented, but what is the need really?")         
+    print("Done!")        
             
 def info(args):
     for plugin_name in args.plugins:
-        slug = bukget.find_slug('bukkit', plugin_name)
+        slug = bkapi.find_by_name('bukkit', plugin_name)
         if slug is None or len(slug) < 1:
-            print("Could not find %s on BukGet!" % plugin_name)
+            print("Could not find {} on BukGet!".format(plugin_name))
             continue
-        plugin = bukget.plugin_details('bukkit', slug, size=1)
+        plugin = bkorm.plugin_details('bukkit', slug, size=1)
         if plugin is None:
-            print("Could not find %s on BukGet!" % plugin_name)
+            print("Could not find {} on BukGet!".format(plugin_name))
             continue
         
         print (plugin_info_message % (plugin.plugin_name, get_best_version(plugin).version,
