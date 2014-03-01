@@ -15,11 +15,22 @@ class Plugins(object):
         bukgetapi.BASE = args.base_url
         bukgetapi.USER_AGENT = args.user_agent
         self.args = args
-        print(repr(args))
+        if args.subcommand is 'search':
+            self.search()
+        elif args.subcommand is 'info':
+            self.info()
+        elif args.subcommand is 'download':
+            self.download()
+        elif args.subcommand is 'update':
+            self.update()
+        elif args.subcommand is 'list':
+            self.list()
+        else:
+            return
 
     def search(self):
         """ Search. """
-        query = ' '.join(self.args.plugins)
+        query = self.args.query
         print('Searching for `{}`'.format(query))
 
         search_results = bukget.search(
@@ -61,15 +72,14 @@ class Plugins(object):
 
     def info(self):
         """ Info. """
+        print('info:', self.args)
         for query in self.args.plugins:
             print('Looking up `{}`'.format(query))
             plugin = bukget.find_by_name(SERVER, query)
             if plugin is None:
                 print('Could not find `{}`'.format(query))
                 continue
-            plugin = bukget.plugin_details(SERVER, plugin)
-
-        print('info:', self.args)
+            print(repr(plugin))
 
     def download(self):
         """ Download. """
@@ -78,3 +88,7 @@ class Plugins(object):
     def update(self):
         """ Update. """
         print('update:', self.args)
+
+    def list(self):
+        """ List. """
+        print('list:', self.args)
