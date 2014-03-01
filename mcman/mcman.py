@@ -1,5 +1,6 @@
 """ mcman main module. """
 import argparse
+import mcman
 from mcman.plugins import Plugins
 from mcman.servers import Servers
 
@@ -92,8 +93,12 @@ def setup_plugin_commands(sub_parsers, parent):
 
     # Base URL
     sub_parent.add_argument(
-        '--base-url', metavar='base-url', default='http://api.bukget.org/3/',
+        '--base-url', default='http://api.bukget.org/3/',
         help='The base URL to use for BukGet')
+    sub_parent.add_argument(
+        '--server', default='bukkit',
+        help='The server to get plugins for. This is sent to BukGet, '
+             + 'and will affect what plugins you can download')
 
     # The plugin command parser
     parser = sub_parsers.add_parser(
@@ -208,7 +213,7 @@ def main():
 
     args = parser.parse_args()
     if args.version:
-        print('Version: {}'.format('uknown'))
+        print('Version: {}'.format(mcman.__version__))
     # If there no command or subcommand is specified we print the help
     if not 'command' in args:
         parser.print_help()
@@ -221,6 +226,3 @@ def main():
         else:
             return
     args.command(args)
-
-if __name__ == '__main__':
-    main()
