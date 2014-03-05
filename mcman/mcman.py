@@ -57,6 +57,20 @@ def setup_server_commands(sub_parsers, parent):
         'server', help='The server to get versions for.')
     versions_parser.add_argument(
         'channel', nargs='?', help='The channel to get versions for.')
+    # builds, sub command of server
+    builds_parser = sub_parsers.add_parser(
+        'builds', aliases=['b'],
+        help='List builds for the specified server.',
+        description='List all available builds for the server specified, '
+                    + 'or only the ones in the specified channel, or version',
+        parents=[sub_parent])
+    builds_parser.set_defaults(subcommand='builds')
+    builds_parser.add_argument(
+        'server', help='The server to get builds for.')
+    builds_parser.add_argument(
+        'channel', nargs='?', help='The channel to get builds for.')
+    builds_parser.add_argument(
+        'version', nargs='?', help='The version to get builds for.')
     # download, sub command of server
     download_parser = sub_parsers.add_parser(
         'download', aliases=['d'],
@@ -71,6 +85,10 @@ def setup_server_commands(sub_parsers, parent):
         'channel', nargs='?', help='The channel to dowload from.')
     download_parser.add_argument(
         'version', nargs='?', help='The specific version to download.')
+    download_parser.add_argument(
+        'build', nargs='?', help='The specific build to download')
+    download_parser.add_argument(
+        '-o', '--output', help='Filename to download to')
     # identify, sub command of server
     identify_parser = sub_parsers.add_parser(
         'identify', aliases=['i'],
@@ -171,7 +189,7 @@ def main():
     parent.add_argument(
         '--version',
         help='Show the version of mcman, then proceede normally',
-        action='store_true')
+        action='store_true', dest='show_version')
     parent.add_argument(
         '--user-agent',
         metavar='agent',
@@ -212,7 +230,7 @@ def main():
     plugin_parser = setup_plugin_commands(sub_parsers, parent)
 
     args = parser.parse_args()
-    if args.version:
+    if args.show_version:
         print('Version: {}'.format(mcman.__version__))
     # If there no command or subcommand is specified we print the help
     if not 'command' in args:
@@ -223,6 +241,5 @@ def main():
             plugin_parser.print_help()
         elif args.command is Servers:
             server_parser.print_help()
-        else:
-            return
+        return
     args.command(args)

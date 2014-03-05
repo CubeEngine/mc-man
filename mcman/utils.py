@@ -1,4 +1,8 @@
 """ Utilities. """
+import sys
+import hashlib
+import os
+from urllib.request import urlretrieve
 
 
 def levenshtein(x, y):
@@ -35,3 +39,52 @@ def remove_duplicates(plugins):
         else:
             new.append(plugin)
     return new
+
+
+def list_names(array, word=', ', last_word=' and '):
+    """ Human readable list of the names.
+
+    This function displays the array in a human readable form. It will separate
+    the first elements by the `word`, and the last element will have the
+    `last_word` before it.
+
+    Example returned string:
+        one, two and three
+
+    """
+    if len(array) > 1:
+        return (word.join([str(i) for i in array[:-1]]) + last_word +
+                str(array[-1]))
+    elif len(array) == 1:
+        return array[0]
+
+
+def download(url, file_name=None, checksum=None):
+    """ Download with progressbar. """
+    def progress(count, blocksize, totalsize):
+        percent = int(count*blocksize*100/totalsize)
+        sys.stdout.write('\r[{}{}] {:>3}%'.format(
+            replace_last('=' * percent, '=', '>'),
+            ' ' * (100-percent), percent))
+        sys.stdout.flush()
+
+    if file_name is None:
+        file_name = url.split('/')[-1]
+    print('Downloading to {}...'.format(file_name))
+    urlretrieve(url, filename=file_name, reporthook=progress)
+    print()
+
+    if checksum is not None and len(checksum) > 0:
+        print('Checking checksum...')
+        actual_checksum = hashlib.md5(open(file_name, 'rb').read()).hexdigest()
+        if actual_checksum == checksum:
+            print('Sucess')
+        else:
+            os.remove(file_name)
+            print('The checksums did not match! The file was deleted.')
+
+
+def replace_last(string, old, new):
+    """ Replace the last occurance of `old` in `string` with `new`. """
+    string = string.rsplit(old, 1)
+    return new.join(string)
