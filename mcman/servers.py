@@ -30,6 +30,11 @@ class Servers(object):
         else:
             return
 
+    def print_error(self, error):
+        """ Print the error. """
+        print('Recieved an error from SpaceGDN:')
+        print('   ', error['message'])
+
     def servers(self):
         """ List servers. """
         print('Fetching server list from SpaceGDN...')
@@ -44,8 +49,7 @@ class Servers(object):
             else:
                 print('    No results...')
         else:
-            print('Recieved an error from SpaceGDN:')
-            print('   ', result['message'])
+            self.print_error(result)
 
     def channels(self):
         """ List channels. """
@@ -63,8 +67,7 @@ class Servers(object):
             else:
                 print('    No results...')
         else:
-            print('Recieved an error from SpaceGDN:')
-            print('   ', result['message'])
+            self.print_error(result)
 
     def versions(self):
         """ List versions. """
@@ -93,8 +96,7 @@ class Servers(object):
             else:
                 print('    No results...')
         else:
-            print('Recieved an error from SpaceGDN:')
-            print('   ', result['message'])
+            self.print_error(result)
 
     def builds(self):
         """ List builds. """
@@ -128,8 +130,7 @@ class Servers(object):
             else:
                 print('    No results...')
         else:
-            print('Recieved an error from SpaceGDN:')
-            print('   ', result['message'])
+            self.print_error(result)
 
     def download(self):
         """ Download a server. """
@@ -170,8 +171,7 @@ class Servers(object):
             download(build['url'], file_name=self.args.output,
                      checksum=build['checksum'])
         else:
-            print('Recieved an error from SpaceGDN:')
-            print('   ', result['message'])
+            self.print_error(result)
 
     def identify(self):
         """ Identify what server a jar is. """

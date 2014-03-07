@@ -76,12 +76,17 @@ def download(url, file_name=None, checksum=None):
 
     if checksum is not None and len(checksum) > 0:
         print('Checking checksum...')
-        actual_checksum = hashlib.md5(open(file_name, 'rb').read()).hexdigest()
+        actual_checksum = checksum_file(file_name)
         if actual_checksum == checksum:
             print('Sucess')
         else:
             os.remove(file_name)
             print('The checksums did not match! The file was deleted.')
+
+
+def checksum_file(file_name):
+    """ MD5 Checksum of file with name `file_name`. """
+    return hashlib.md5(open(file_name, 'rb').read()).hexdigest()
 
 
 def replace_last(string, old, new):

@@ -117,6 +117,22 @@ def setup_plugin_commands(sub_parsers, parent):
         '--server', default='bukkit',
         help='The server to get plugins for. This is sent to BukGet, '
              + 'and will affect what plugins you can download')
+    sub_parent.add_argument(
+        '--beta', action='store_const', dest='version', const='beta',
+        help="Find latest beta version, instead of latest release for "
+             + "plugins where a version isn't specified.")
+    sub_parent.add_argument(
+        '--alpha', action='store_const', dest='version', const='alpha',
+        help="Find latest alpha version, instead of latest release for "
+             + "plugins where a version isn't specified.")
+    sub_parent.add_argument(
+        '--latest', action='store_const', dest='version', const='latest',
+        help="Find latest version, no matter type, instead of latest release "
+             + "for plugins where a version isn't specified.")
+    sub_parent.add_argument(
+        '--no-resolve-dependencies', action='store_false',
+        dest='resolve_dependencies', help='Do not resolve dependencies.')
+    sub_parent.set_defaults(version='release')
 
     # The plugin command parser
     parser = sub_parsers.add_parser(
