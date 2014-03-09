@@ -17,7 +17,8 @@ def setup_server_commands(sub_parsers, parent):
 
     # Base URL
     sub_parent.add_argument(
-        '--base-url', metavar='base-url', default='http://gdn.api.xereo.net/',
+        '--base-url', metavar='base-url',
+        default='http://spacegdn.totokaka.io/v1/',
         help='The base URL to use for SpaceGDN')
 
     # The server command parser

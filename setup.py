@@ -11,7 +11,7 @@ setup(
     # TODO - url='-',
     packages=['mcman'],
     scripts=["bin/mcman"],
-    requires=[
+    install_requires=[
         'pyyaml',
         'pybukget',
         'pyspacegdn'
