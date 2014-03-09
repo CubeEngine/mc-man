@@ -6,7 +6,7 @@ import os
 from urllib.error import URLError
 # Imports from dependencies:
 import yaml
-from bukget import api as bukget
+import bukget
 # Imports from mcman:
 from mcman import utils
 
@@ -37,7 +37,7 @@ class Plugins(object):
                 self.list()
             else:
                 return
-        except URLError as err:
+        except (URLError, ValueError) as err:
             print('Error from BukGet: ' + str(err))
 
     def search(self):
@@ -56,12 +56,9 @@ class Plugins(object):
                 'action': '=',
                 'value': self.server
             }, sort=('-' if self.args.size >= 0 else '')+'popularity.monthly',
-            fields=['slug',
-                    'plugin_name',
-                    'description',
-                    'popularity.monthly'],
+            fields='slug,plugin_name,description,popularity.monthly',
             size=abs(self.args.size))
-
+        print(search_results)
         results = list()
         for plugin in search_results:
             if len(plugin) == 0:
@@ -91,10 +88,15 @@ class Plugins(object):
             if slug is None:
                 print('Could not find `{}`'.format(query))
                 continue
-            plugin = bukget.plugin_details(self.server, slug, fields=[
-                'website', 'dbo_page', 'description', 'versions.type',
-                'versions.game_versions', 'versions.version', 'plugin_name',
-                'server', 'authors', 'categories', 'stage', 'slug'])
+            plugin = bukget.plugin_details(self.server, slug,
+                                           fields='website,dbo_page,'
+                                                  + 'description,'
+                                                  + 'versions.type,'
+                                                  + 'versions.game_versions,'
+                                                  + 'versions.version,'
+                                                  + 'plugin_name,server,'
+                                                  + 'authors,categories,'
+                                                  + 'stage,slug')
             print('Name:       {}'.format(plugin['plugin_name']))
             print('Authors:    {}'.format(utils.list_names(
                 plugin['authors'])))
@@ -133,11 +135,12 @@ class Plugins(object):
         for slug in to_install:
             plugin = bukget.plugin_details(
                 self.server, slug, versions[slug] if slug in versions
-                else self.version, fields=[
-                    'slug', 'plugin_name', 'versions.version', 'versions.md5',
-                    'versions.download', 'versions.type', 'versions.filename',
-                    'versions.hard_dependencies', 'versions.soft_dependencies']
-                )
+                else self.version, fields='slug,plugin_name,versions.version,'
+                                          + 'versions.md5,versions.download,'
+                                          + 'versions.type,'
+                                          + 'versions.filename,'
+                                          + 'versions.hard_dependencies,'
+                                          + 'versions.soft_dependencies')
             if plugin is None:
                 print('    Could not find plugin {} again!'.format(slug))
             elif len(plugin['versions']) < 1:
@@ -185,11 +188,11 @@ class Plugins(object):
         to_update = list()
         for plugin, i_version in list_plugins():
             u_plugin = bukget.plugin_details(self.server, plugin, self.version,
-                                             fields=['versions.version',
-                                                     'versions.md5',
-                                                     'versions.download',
-                                                     'versions.filename',
-                                                     'plugin_name'])
+                                             fields='versions.version,'
+                                                    + 'versions.md5,'
+                                                    + 'versions.download,'
+                                                    + 'versions.filename,'
+                                                    + 'plugin_name')
             if u_plugin is None or len(u_plugin['versions']) < 1:
                 print('Could not find {} on BukGet!'.format(plugin))
                 continue
@@ -246,8 +249,10 @@ class Plugins(object):
         plugin = bukget.find_by_name(self.server, plugin_name)
         if plugin is None:
             raise ValueError('Could not find plugin {}'.format(plugin_name))
-        plugin = bukget.plugin_details(self.server, plugin, version, fields=[
-            'slug', 'versions.hard_dependencies', 'versions.version'])
+        plugin = bukget.plugin_details(self.server, plugin, version,
+                                       fields='slug,'
+                                              + 'versions.hard_dependencies,'
+                                              + 'versions.version')
         if plugin['slug'] in dependencies:
             return dependencies
         if len(plugin['versions']) < 1:
@@ -357,7 +362,7 @@ def list_plugins():
         result = bukget.search({'field':  'versions.md5',
                                 'action': '=',
                                 'value':  checksum},
-                               fields=['slug', 'versions.version'])
+                               fields='slug,versions.version')
         if len(result) > 0:
             slug = result[0]['slug']
         # Then we search by main class
@@ -372,7 +377,7 @@ def list_plugins():
                 result = bukget.search({'field':  'main',
                                         'action': '=',
                                         'value':  main},
-                                       fields=['slug', 'versions.version'])
+                                       fields='slug,versions.version')
                 if len(result) > 0:
                     slug = result[0]['slug']
                 else:

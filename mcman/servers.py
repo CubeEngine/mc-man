@@ -34,7 +34,7 @@ class Servers(object):
                 self.identify()
             else:
                 return
-        except URLError as err:
+        except (URLError, ValueError) as err:
             print('Error from SpaceGDN: ' + str(err))
 
     def print_error(self, error):
