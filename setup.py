@@ -11,12 +11,17 @@ setup(
     # TODO - url='-',
     packages=['mcman'],
     scripts=["bin/mcman"],
+    requires=[
+        'pyyaml',
+        'pybukget',
+        'pyspacegdn'
+    ],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Intended Audience :: System Administrators',
         'Topic :: System :: Systems Administration',

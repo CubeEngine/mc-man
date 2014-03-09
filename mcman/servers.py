@@ -161,8 +161,9 @@ class Servers(object):
             channel = spacegdn.channels(channel=build['channel_id'])[0]['name']
             version = spacegdn.versions(
                 version=build['version_id'])[0]['version']
-            print('Found build: channel: {}, version: {}, build: {}'
-                  .format(channel, version, build['build']))
+            print('Found build:')
+            print("    server: '{}' channel: '{}', version: '{}', build: '{}'"
+                  .format(self.args.server, channel, version, build['build']))
             print('Press enter to download, Ctrl+C or Ctrl+D to abort')
             try:
                 input()
