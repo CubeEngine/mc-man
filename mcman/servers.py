@@ -46,10 +46,7 @@ class Servers(object):
         """ List servers. """
         print('Fetching server list from SpaceGDN...')
 
-        try:
-            result = spacegdn.jars()
-        except URLError as err:
-            print('Error from SpaceGDN: {}'.format(str(err)))
+        result = spacegdn.jars()
 
         if type(result) is list:
             print('Available jars:')
