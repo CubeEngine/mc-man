@@ -8,7 +8,7 @@ setup(
     author=mcman.__author__,
     author_email='mail@totokaka.io',
     description='A Minecraft server jar and plugins manager',
-    # TODO - url='-',
+    url='https://github.com/CubeEngineDev/mcman',
     packages=['mcman'],
     scripts=["bin/mcman"],
     install_requires=[
