@@ -1,6 +1,10 @@
 """ mcman servers module. """
 
+# Imports from the python library:
+from urllib.error import URLError
+# Imports from dependencies:
 import spacegdn
+# Imports from mcman:
 from mcman.utils import list_names, download
 
 
@@ -15,20 +19,23 @@ class Servers(object):
         spacegdn.BASE = args.base_url
         spacegdn.USER_AGENT = args.user_agent
 
-        if args.subcommand is 'servers':
-            self.servers()
-        elif args.subcommand is 'channels':
-            self.channels()
-        elif args.subcommand is 'versions':
-            self.versions()
-        elif args.subcommand is 'builds':
-            self.builds()
-        elif args.subcommand is 'download':
-            self.download()
-        elif args.subcommand is 'identify':
-            self.identify()
-        else:
-            return
+        try:
+            if args.subcommand is 'servers':
+                self.servers()
+            elif args.subcommand is 'channels':
+                self.channels()
+            elif args.subcommand is 'versions':
+                self.versions()
+            elif args.subcommand is 'builds':
+                self.builds()
+            elif args.subcommand is 'download':
+                self.download()
+            elif args.subcommand is 'identify':
+                self.identify()
+            else:
+                return
+        except URLError as err:
+            print('Error from SpaceGDN: ' + str(err))
 
     def print_error(self, error):
         """ Print the error. """
@@ -39,7 +46,10 @@ class Servers(object):
         """ List servers. """
         print('Fetching server list from SpaceGDN...')
 
-        result = spacegdn.jars()
+        try:
+            result = spacegdn.jars()
+        except URLError as err:
+            print('Error from SpaceGDN: {}'.format(str(err)))
 
         if type(result) is list:
             print('Available jars:')

@@ -9,26 +9,26 @@ from urllib.request import urlretrieve
 from math import ceil
 
 
-def levenshtein(x, y):
-    """ Get the levenshtein edit distance between y strings. """
-    if len(x) < len(y):
-        return levenshtein(y, x)
-    if len(y) == 0:
-        return len(x)
-    previous_row = range(len(y) + 1)
-    for i, k in enumerate(x):
+def levenshtein(first, second):
+    """ Get the levenshtein edit distance between the strings. """
+    if len(first) < len(second):
+        return levenshtein(second, first)
+    if len(second) == 0:
+        return len(first)
+    previous_row = range(len(second) + 1)
+    for i, k in enumerate(first):
         current_row = [i + 1]
-        for j, l in enumerate(y):
+        for index, value in enumerate(second):
             insertions = previous_row[
-                j + 1] + 1
-            deletions = current_row[j] + 1
-            substitutions = previous_row[j] + (k != l)
+                index + 1] + 1
+            deletions = current_row[index] + 1
+            substitutions = previous_row[index] + (k != value)
             current_row.append(min(insertions, deletions, substitutions))
         previous_row = current_row
     return previous_row[-1]
 
 
-def list_names(array, word=', ', last_word=' and '):
+def list_names(array, separator=', ', last_separator=' and '):
     """ Human readable list of the names.
 
     This function displays the array in a human readable form. It will separate
@@ -40,7 +40,7 @@ def list_names(array, word=', ', last_word=' and '):
 
     """
     if len(array) > 1:
-        return (word.join([str(i) for i in array[:-1]]) + last_word +
+        return (separator.join([str(i) for i in array[:-1]]) + last_separator +
                 str(array[-1]))
     elif len(array) == 1:
         return array[0]
@@ -48,7 +48,19 @@ def list_names(array, word=', ', last_word=' and '):
 
 def download(url, file_name=None, checksum=None, prefix='',
              display_name=None):
-    """ Download with progressbar. """
+    """ Download with progressbar.
+
+    Arguments:
+        url             URL to download from.
+        file_name       Name to download file to. Defaults to None.
+        checksum        MD5 checksum to check the file against.
+                        Defaults to None.
+        prefix          What to put before the file_name on the left side.
+                        Defaults to an empty string.
+        display_name    The name to display on the left side instead of the
+                        file_name. Defaults to None.
+
+    """
     if file_name is None:
         file_name = url.split('/')[-1]
     if display_name is None:
@@ -70,7 +82,13 @@ def download(url, file_name=None, checksum=None, prefix='',
 
 
 def create_progress_bar(width, prefix=None):
-    """ Create a progress bar. """
+    """ Create a progress bar.
+
+    This returns a function which can be used as the progress hook for
+    urlretrieve. If you don't want to use the function of urlretrieve, the
+    signature for the function is int, int, int: Count, count_size, max.
+
+    """
     left = ceil(width/2)
     right = width-left
     net_bar_size = right-8

@@ -1,6 +1,9 @@
 """ mcman main module. """
+
+# Imports from the python library:
 import argparse
 import mcman
+# Imports from mcman:
 from mcman.plugins import Plugins
 from mcman.servers import Servers
 

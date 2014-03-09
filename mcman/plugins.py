@@ -1,9 +1,14 @@
 """ mcman plugins module. """
-from bukget import api as bukget
-from mcman import utils
+
+# Imports from the python library:
 import zipfile
 import os
+from urllib.error import URLError
+# Imports from dependencies:
 import yaml
+from bukget import api as bukget
+# Imports from mcman:
+from mcman import utils
 
 
 class Plugins(object):
@@ -19,18 +24,21 @@ class Plugins(object):
 
         self.args = args
 
-        if args.subcommand is 'search':
-            self.search()
-        elif args.subcommand is 'info':
-            self.info()
-        elif args.subcommand is 'download':
-            self.download()
-        elif args.subcommand is 'update':
-            self.update()
-        elif args.subcommand is 'list':
-            self.list()
-        else:
-            return
+        try:
+            if args.subcommand is 'search':
+                self.search()
+            elif args.subcommand is 'info':
+                self.info()
+            elif args.subcommand is 'download':
+                self.download()
+            elif args.subcommand is 'update':
+                self.update()
+            elif args.subcommand is 'list':
+                self.list()
+            else:
+                return
+        except URLError as err:
+            print('Error from BukGet: ' + str(err))
 
     def search(self):
         """ Search. """
@@ -55,7 +63,6 @@ class Plugins(object):
             size=abs(self.args.size))
 
         results = list()
-        print(search_results)
         for plugin in search_results:
             if len(plugin) == 0:
                 continue
