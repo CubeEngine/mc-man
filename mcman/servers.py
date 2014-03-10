@@ -5,12 +5,14 @@ from urllib.error import URLError
 # Imports from dependencies:
 import spacegdn
 # Imports from mcman:
-from mcman.utils import list_names, download
+from mcman.utils import list_names, download, ask
 
 
 class Servers(object):
 
     """ The servers command for mcman. """
+
+    prefix = ' :: '
 
     def __init__(self, args):
         """ Parse commands, and execute tasks. """
@@ -35,50 +37,60 @@ class Servers(object):
             else:
                 return
         except (URLError, ValueError) as err:
-            print('Error from SpaceGDN: ' + str(err))
+            self.prnt('Error: {}'.format(str(err)), filled_prefix=False)
 
-    def print_error(self, error):
-        """ Print the error. """
-        print('Recieved an error from SpaceGDN:')
-        print('   ', error['message'])
+    def prnt(self, message, filled_prefix=True, prefix=True):
+        """ Print general output. """
+        if prefix:
+            if filled_prefix:
+                prefix = self.prefix
+            else:
+                prefix = ' ' * len(self.prefix)
+        else:
+            prefix = ''
+        print(prefix + message)
+
+    def error(self, error):
+        """ Print error. """
+        self.prnt('Error from SpaceGDN: {}'.format(error['message']),
+                  filled_prefix=False)
+
+    def prnt_result(self, result):
+        """ Print result. """
+        self.prnt('Results:')
+        if len(result) > 0:
+            self.prnt('    {}'.format(list_names(result)), filled_prefix=False)
+        else:
+            self.prnt('    No results...', filled_prefix=False)
 
     def servers(self):
         """ List servers. """
-        print('Fetching server list from SpaceGDN...')
+        self.prnt('Fetching server list from SpaceGDN')
 
         result = spacegdn.jars()
 
-        if type(result) is list:
-            print('Available jars:')
-            names = [jar['name'] for jar in result]
-            if len(names) > 0:
-                print('   ', list_names(names))
-            else:
-                print('    No results...')
-        else:
-            self.print_error(result)
+        if type(result) is not list:
+            self.error(result)
+            return
+
+        self.prnt_result([jar['name'] for jar in result])
 
     def channels(self):
         """ List channels. """
-        print('Fetching channel list from SpaceGDN...')
+        self.prnt('Fetching channel list from SpaceGDN')
 
         server = spacegdn.get_id(jar=self.args.server)
         result = spacegdn.channels(jar=server)
 
-        if type(result) is list:
-            print('Available channels for {}:'.format(self.args.server))
+        if type(result) is not list:
+            self.error(result)
+            return
 
-            names = [channel['name'] for channel in result]
-            if len(names) > 0:
-                print('   ', list_names(names))
-            else:
-                print('    No results...')
-        else:
-            self.print_error(result)
+        self.prnt_result([channel['name'] for channel in result])
 
     def versions(self):
         """ List versions. """
-        print('Fetching version list from SpaceGDN...')
+        self.prnt('Fetching version list from SpaceGDN')
 
         server = spacegdn.get_id(jar=self.args.server)
         channel = None
@@ -86,28 +98,23 @@ class Servers(object):
             channel = spacegdn.get_id(jar=server, channel=self.args.channel)
         result = spacegdn.versions(jar=server, channel=channel)
 
-        if type(result) is list:
-            print('Available versions for {}:'.format(self.args.server))
-            # Sort and limit the results
-            names = list(reversed(sorted(
-                [version['version'] for version in result])))
-            if self.args.size >= 0:
-                names = names[
-                    :min(self.args.size, len(names))]
-            else:
-                names = names[
-                    max(self.args.size, -len(names)):]
+        if type(result) is not list:
+            self.error(result)
+            return
 
-            if len(names) > 0:
-                print('   ', list_names(names))
-            else:
-                print('    No results...')
+        # Sort and limit the results
+        versions = list(reversed(sorted(
+            [version['version'] for version in result])))
+        if self.args.size >= 0:
+            versions = versions[:min(self.args.size, len(versions))]
         else:
-            self.print_error(result)
+            versions = versions[max(self.args.size, -len(versions)):]
+
+        self.prnt_result(versions)
 
     def builds(self):
         """ List builds. """
-        print('Fetching build list from SpaceGDN...')
+        self.prnt('Fetching build list from SpaceGDN')
 
         server = spacegdn.get_id(jar=self.args.server)
         channel = None
@@ -120,28 +127,26 @@ class Servers(object):
         result = spacegdn.builds(jar=server, channel=channel,
                                  version=version)
 
-        if type(result) is list:
-            print('Available builds for {}:'.format(self.args.server))
-            # Sort and limit the results
-            names = list(reversed(sorted(
-                [build['build'] for build in result])))
-            if self.args.size >= 0:
-                names = names[
-                    :min(self.args.size, len(names))]
-            else:
-                names = names[
-                    max(self.args.size, -len(names)):]
+        if type(result) is not list:
+            self.error(result)
+            return
 
-            if len(names) > 0:
-                print('   ', list_names(names))
-            else:
-                print('    No results...')
+        # Sort and limit the results
+        names = list(reversed(sorted(
+            [build['build'] for build in result])))
+        if self.args.size >= 0:
+            names = names[
+                :min(self.args.size, len(names))]
         else:
-            self.print_error(result)
+            names = names[
+                max(self.args.size, -len(names)):]
+
+        self.prnt_result(names)
 
     def download(self):
         """ Download a server. """
-        print('Finding build...')
+        self.prnt('Finding build on SpaceGDN')
+
         server = spacegdn.get_id(jar=self.args.server)
         channel = None
         if self.args.channel is not None:
@@ -157,30 +162,36 @@ class Servers(object):
                                     build=self.args.build)
         result = spacegdn.builds(jar=server, channel=channel,
                                  version=version, build=build)
-        if type(result) is list:
-            if len(result) < 1:
-                print('No results...')
-                return
-            result.sort(key=lambda build: build['build'], reverse=True)
-            build = result[0]
-            # We don't check if we got a successfull result because the id's
-            # were supplied by SpaceGDN
-            channel = spacegdn.channels(channel=build['channel_id'])[0]['name']
-            version = spacegdn.versions(
-                version=build['version_id'])[0]['version']
-            print('Found build:')
-            print("    server: '{}' channel: '{}', version: '{}', build: '{}'"
-                  .format(self.args.server, channel, version, build['build']))
-            print('Press enter to download, Ctrl+C or Ctrl+D to abort')
-            try:
-                input()
-            except (EOFError, KeyboardInterrupt):
-                return
+
+        if type(result) is not list:
+            self.error(result)
+            return
+
+        if len(result) < 1:
+            self.prnt('Could not find any build', filled_prefix=False)
+            return
+
+        # Sort the builds
+        result.sort(key=lambda build: build['build'], reverse=True)
+        build = result[0]
+        # Find the name of the channel and version
+        channel = spacegdn.channels(channel=build['channel_id'])[0]['name']
+        version = spacegdn.versions(version=build['version_id'])[0]['version']
+
+        self.prnt('Found build:')
+        self.prnt('', False, False)
+        self.prnt('{} {} {} {}'.format(self.args.server, channel,
+                                       version, build['build']),
+                  filled_prefix=False)
+        self.prnt('', False, False)
+
+        if ask('Continue to download?'):
             download(build['url'], file_name=self.args.output,
-                     checksum=build['checksum'])
-        else:
-            self.print_error(result)
+                     checksum=build['checksum'], prefix=' '*4)
+            self.prnt('', False, False)
+            self.prnt('Done!', prefix=False)
 
     def identify(self):
         """ Identify what server a jar is. """
-        print('The SpaceGDN currently have no way to search.')
+        self.prnt('The SpaceGDN API currently have no way to search.',
+                  prefix=False)

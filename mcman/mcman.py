@@ -147,7 +147,7 @@ def setup_plugin_commands(sub_parsers, parent):
     parser.set_defaults(command=Plugins)
 
     # The plugin sub commands
-    sub_parsers = parser.add_subparsers()
+    sub_parsers = parser.add_subparsers(title='subcommands')
     # search, sub command of plugin
     search_parser = sub_parsers.add_parser(
         'search', aliases=['s'],
@@ -165,7 +165,7 @@ def setup_plugin_commands(sub_parsers, parent):
         parents=[sub_parent])
     info_parser.set_defaults(subcommand='info')
     info_parser.add_argument(
-        'plugins', metavar='plugin', type=str, nargs='+',
+        'plugins', metavar='plugin', type=str,
         help='Plugin(s) to get info for.')
     # download, sub command of plugin
     download_parser = sub_parsers.add_parser(

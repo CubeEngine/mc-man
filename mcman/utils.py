@@ -166,3 +166,13 @@ def extract_file(zipped, file, dest):
         content = zipped.read(file)
         with open(dest, 'wb') as dest:
             dest.write(content)
+
+
+def ask(question, want_yes=True):
+    """ Ask user for confirmation. """
+    print(question, end=' [Y/n]: ' if want_yes else ' [y/N]: ')
+    answer = input()
+    if len(answer) == 0:
+        return want_yes
+    else:
+        return 'y' in answer.lower()
