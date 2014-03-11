@@ -155,14 +155,9 @@ def extract_file(zipped, file, dest):
     file in `dest` in the filesystem. Folders are handled correctly, too.
 
     """
-    if file.endswith('/'):
-        if os.path.exists(dest):
-            if not os.path.isdir(dest):
-                os.remove(dest)
-            else:
-                return
-        os.makedirs(dest)
-    else:
+    if '/' in dest:
+        os.makedirs('/'.join(dest.split('/')[:-1]), exist_ok=True)
+    if not file.endswith('/'):
         content = zipped.read(file)
         with open(dest, 'wb') as dest:
             dest.write(content)

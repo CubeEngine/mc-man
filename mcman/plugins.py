@@ -420,17 +420,14 @@ def download_plugin(plugin, prefix=""):
         print(' '*len(prefix) + 'Unzipping...', end=' ')
         with zipfile.ZipFile(full_name, 'r') as zipped:
             folders = [x for x in zipped.namelist()
-                       if len(x.split('/')) == 2 and x.endswith('/')]
+                       if x.endswith('/')]
             jars = [x for x in zipped.namelist()
-                    if len(x.split('/')) == 1 and x.endswith('.jar')]
+                    if x.endswith('.jar')]
             strip_folder = False
             if len(jars) == 0 and len(folders) > 0:
                 folder = folders[0]
-                folders = [x for x in zipped.namelist()
-                           if len(x.split('/')) == 3 and x.endswith('/')
-                           and x.startswith(folder)]
                 jars = [x for x in zipped.namelist()
-                        if len(x.split('/')) == 2 and x.endswith('.jar')
+                        if x.endswith('.jar')
                         and x.startswith(folder)]
                 strip_folder = folder
 
@@ -438,13 +435,6 @@ def download_plugin(plugin, prefix=""):
                 utils.extract_file(zipped, jar,
                                    (jar.split(strip_folder, 1)[1]
                                     if strip_folder else jar))
-            for folder in folders:
-                children = [x for x in zipped.namelist()
-                            if x.startswith(folder)]
-                for child in children:
-                    utils.extract_file(zipped, child,
-                                       (child.split(strip_folder, 1)[1]
-                                        if strip_folder else child))
         os.remove(full_name)
         print('Success')
 
