@@ -5,7 +5,7 @@ from urllib.error import URLError
 # Imports from dependencies:
 import spacegdn
 # Imports from mcman:
-from mcman.utils import list_names, download, ask
+from mcman.utils import list_names, download, ask, checksum_file
 
 
 class Servers(object):
@@ -193,5 +193,28 @@ class Servers(object):
 
     def identify(self):
         """ Identify what server a jar is. """
-        self.prnt('The SpaceGDN API currently have no way to search.',
-                  prefix=False)
+        self.prnt('Calculating checksum of `{}`'.format(self.args.jar.name))
+
+        checksum = checksum_file(self.args.jar)
+
+        self.prnt('Finding build on SpaceGDN')
+
+        builds = spacegdn.builds(where='build.checksum.eq.{}'.format(checksum))
+
+        if len(builds) < 1:
+            self.prnt('Found no build on SpaceGDN with matching checksum')
+            return
+
+        build = builds[0]
+        server = spacegdn.jars(build['jar_id'])[0]['name']
+        channel = spacegdn.channels(build['jar_id'],
+                                    build['channel_id'])[0]['name']
+        version = spacegdn.versions(build['jar_id'], build['channel_id'],
+                                    build['version_id'])[0]['version']
+        build = build['build']
+
+        self.prnt('Found build:')
+        self.prnt('', False, False)
+        self.prnt('{} {} {} {}'.format(server, channel, version, build),
+                  filled_prefix=False)
+        self.prnt('', False, False)
