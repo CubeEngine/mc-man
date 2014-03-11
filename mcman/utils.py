@@ -117,9 +117,11 @@ def create_progress_bar(width, prefix=None):
     return progress_hook
 
 
-def checksum_file(file_name):
+def checksum_file(file):
     """ MD5 Checksum of file with name `file_name`. """
-    return hashlib.md5(open(file_name, 'rb').read()).hexdigest()
+    if type(file) is str:
+        file = open(file, 'rb')
+    return hashlib.md5(file.read()).hexdigest()
 
 
 def replace_last(string, old, new):
