@@ -5,7 +5,7 @@ from urllib.error import URLError
 # Imports from dependencies:
 import spacegdn
 # Imports from mcman:
-from mcman.utils import list_names, download, ask, checksum_file
+from mcman import utils
 
 
 class Servers(object):
@@ -58,10 +58,13 @@ class Servers(object):
     def prnt_result(self, result):
         """ Print result. """
         self.prnt('Results:')
+        self.prnt('', False, False)
         if len(result) > 0:
-            self.prnt('    {}'.format(list_names(result)), filled_prefix=False)
+            self.prnt('    {}'.format(utils.list_names(result)),
+                      filled_prefix=False)
         else:
             self.prnt('    No results...', filled_prefix=False)
+        self.prnt('', False, False)
 
     def servers(self):
         """ List servers. """
@@ -185,9 +188,9 @@ class Servers(object):
                   filled_prefix=False)
         self.prnt('', False, False)
 
-        if ask('Continue to download?'):
-            download(build['url'], file_name=self.args.output,
-                     checksum=build['checksum'], prefix=' '*4)
+        if utils.ask('Continue to download?', skip=self.args.no_confirm):
+            utils.download(build['url'], file_name=self.args.output,
+                           checksum=build['checksum'], prefix=' '*4)
             self.prnt('', False, False)
             self.prnt('Done!', prefix=False)
 
@@ -195,7 +198,7 @@ class Servers(object):
         """ Identify what server a jar is. """
         self.prnt('Calculating checksum of `{}`'.format(self.args.jar.name))
 
-        checksum = checksum_file(self.args.jar)
+        checksum = utils.checksum_file(self.args.jar)
         self.args.jar.close()
 
         self.prnt('Finding build on SpaceGDN')

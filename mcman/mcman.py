@@ -236,6 +236,10 @@ def main():
         default=80,
         const=-10,
         help='How many entries that should be displayed, from the bottom')
+    group.add_argument(
+        '--no-confirm',
+        action='store_true',
+        help='Do not wait for confirmation, just proceede.')
 
     # The top level command
     parser = argparse.ArgumentParser(

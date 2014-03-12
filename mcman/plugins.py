@@ -224,7 +224,7 @@ class Plugins(object):
                   filled_prefix=False)
 
         self.prnt('', False, False)
-        if utils.ask('Continue to download?'):
+        if utils.ask('Continue to download?', skip=self.args.no_confirm):
             prefix_format = '({{part:>{}}}/{{total}}) '.format(
                 len(str(len(plugins))))
 
@@ -273,7 +273,7 @@ class Plugins(object):
                   filled_prefix=False)
         self.prnt('', False, False)
 
-        if utils.ask('Continue to update?'):
+        if utils.ask('Continue to update?', skip=self.args.no_confirm):
             prefix_format = '({{part:>{}}}/{{total}}) '.format(
                 len(str(len(to_update))))
 

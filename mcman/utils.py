@@ -167,11 +167,15 @@ def extract_file(zipped, file, dest):
             dest.write(content)
 
 
-def ask(question, want_yes=True):
+def ask(question, want_yes=True, skip=False):
     """ Ask user for confirmation. """
     print(question, end=' [Y/n]: ' if want_yes else ' [y/N]: ')
-    answer = input()
-    if len(answer) == 0:
-        return want_yes
+    if skip:
+        print('y')
+        return True
     else:
-        return 'y' in answer.lower()
+        answer = input()
+        if len(answer) == 0:
+            return want_yes
+        else:
+            return 'y' in answer.lower()
