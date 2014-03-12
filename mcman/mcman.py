@@ -262,4 +262,9 @@ def main():
         elif args.command is Servers:
             server_parser.print_help()
         return
-    args.command(args)
+
+    try:
+        args.command(args)
+    except KeyboardInterrupt:
+        print()
+        return

@@ -120,8 +120,10 @@ def create_progress_bar(width, prefix=None):
 def checksum_file(file):
     """ MD5 Checksum of file with name `file_name`. """
     if type(file) is str:
-        file = open(file, 'rb')
-    return hashlib.md5(file.read()).hexdigest()
+        with open(file, 'rb') as file:
+            return checksum_file(file)
+    else:
+        return hashlib.md5(file.read()).hexdigest()
 
 
 def replace_last(string, old, new):

@@ -290,12 +290,16 @@ class Plugins(object):
 
         plugins = list_plugins()
 
+        if len(plugins) == 0:
+            self.prnt('Found no plugins')
+            return
+
         self.prnt('Looking up plugins on BukGet')
 
         new_versions = dict()
         for slug, version, name, jar in plugins:
             plugin = bukget.plugin_details(self.server, slug,
-                                           self.args.version,
+                                           self.version,
                                            fields='versions.version')
             if plugin is None:
                 self.prnt('Could not find {} on BukGet'.format(name),
@@ -320,7 +324,6 @@ class Plugins(object):
                     new_version)
             self.prnt(line, filled_prefix=False)
         self.prnt('', False, False)
-
 
     def resolve_dependencies(self, plugin_name, version=None,
                              dependencies=None):
@@ -403,6 +406,7 @@ def download_plugin(plugin, prefix=""):
         ( 5/20)
 
     """
+    target_folder = find_plugins_folder() + '/'
     url = plugin['versions'][0]['download']
     if ' ' in plugin['plugin_name']:
         filename = ''.join([x.capitalize() for x
@@ -433,8 +437,9 @@ def download_plugin(plugin, prefix=""):
 
             for jar in jars:
                 utils.extract_file(zipped, jar,
-                                   (jar.split(strip_folder, 1)[1]
-                                    if strip_folder else jar))
+                                   target_folder + (
+                                       jar.split(strip_folder, 1)[1]
+                                       if strip_folder else jar))
         os.remove(full_name)
         print('Success')
 
@@ -448,8 +453,9 @@ def list_plugins():
     """
     plugins = set()
 
-    jars = [f for f in os.listdir('.')
-            if os.path.isfile(f) and f.endswith('.jar')]
+    folder = find_plugins_folder()
+    jars = [folder + '/' + f for f in os.listdir(folder)
+            if os.path.isfile(folder + '/' + f) and f.endswith('.jar')]
     for jar in jars:
         # We first search for a plugin with a published version with matching
         # checksum to ours.
@@ -485,3 +491,10 @@ def list_plugins():
             plugins.add((slug, version, plugin_name, jar))
 
     return plugins
+
+
+def find_plugins_folder():
+    """ Find the plugins folder. """
+    if 'plugins' in os.listdir('.'):
+        return 'plugins'
+    return '.'

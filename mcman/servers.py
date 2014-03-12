@@ -196,6 +196,7 @@ class Servers(object):
         self.prnt('Calculating checksum of `{}`'.format(self.args.jar.name))
 
         checksum = checksum_file(self.args.jar)
+        self.args.jar.close()
 
         self.prnt('Finding build on SpaceGDN')
 
