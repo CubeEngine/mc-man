@@ -76,6 +76,19 @@ class Plugins(object):
             }, sort=('-' if self.args.size >= 0 else '')+'popularity.monthly',
             fields='slug,plugin_name,description,popularity.monthly',
             size=abs(self.args.size))
+        search_results += bukget.search(
+            {
+                'field': 'slug',
+                'action': 'like',
+                'value': query
+            },
+            {
+                'field': 'server',
+                'action': '=',
+                'value': self.server
+            }, sort=('-' if self.args.size >= 0 else '')+'popularity.monthly',
+            fields='slug,plugin_name,description,popularity.monthly',
+            size=abs(self.args.size))
 
         # Sort results
         results = list()
