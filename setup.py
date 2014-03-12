@@ -1,5 +1,5 @@
-""" Setup file for PlugMan """
-from distutils.core import setup
+""" Setup file for PlugMan. """
+from setuptools import setup
 import mcman
 
 setup(
@@ -11,11 +11,9 @@ setup(
     url='https://github.com/CubeEngineDev/mcman',
     packages=['mcman'],
     scripts=["bin/mcman"],
-    install_requires=[
-        'pyyaml',
-        'pybukget',
-        'pyspacegdn'
-    ],
+    install_requires=['PyYAML>=3.10',
+                      'pyBukGet>=2.3',
+                      'pySpaceGDN>=0.2'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
