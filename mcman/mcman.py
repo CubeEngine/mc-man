@@ -4,8 +4,8 @@
 import argparse
 import mcman
 # Imports from mcman:
-from mcman.plugins import Plugins
-from mcman.servers import Servers
+from mcman.frontend.plugins_command import PluginsCommand
+from mcman.frontend.servers_command import ServersCommand
 
 
 def negative(argument):
@@ -30,7 +30,7 @@ def setup_server_commands(sub_parsers, parent):
         help='Manage server jars',
         description='Download, identify and list Minecraft server jars.',
         parents=[sub_parent])
-    parser.set_defaults(command=Servers)
+    parser.set_defaults(command=ServersCommand)
     # The server sub commands
     sub_parsers = parser.add_subparsers(title='subcommands')
     # servers, sub command of server
@@ -144,7 +144,7 @@ def setup_plugin_commands(sub_parsers, parent):
         help='Manage plugins',
         description='Find, download and update plugins.',
         parents=[sub_parent])
-    parser.set_defaults(command=Plugins)
+    parser.set_defaults(command=PluginsCommand)
 
     # The plugin sub commands
     sub_parsers = parser.add_subparsers(title='subcommands')
@@ -261,9 +261,9 @@ def main():
         parser.print_help()
         return
     if not 'subcommand' in args:
-        if args.command is Plugins:
+        if args.command is PluginsCommand:
             plugin_parser.print_help()
-        elif args.command is Servers:
+        elif args.command is ServersCommand:
             server_parser.print_help()
         return
 
