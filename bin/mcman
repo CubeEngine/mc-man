@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.3
 """ Shell executeable for PlugMan """
 if __name__ == '__main__':
     from mcman.mcman import main
