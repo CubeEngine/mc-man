@@ -3,7 +3,7 @@ from setuptools import setup
 import mcman
 
 setup(
-    name='mcman',
+    name='mc-man',
     version=mcman.__version__,
     author=mcman.__author__,
     author_email='mail@totokaka.io',
