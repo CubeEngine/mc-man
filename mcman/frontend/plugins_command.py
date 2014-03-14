@@ -166,9 +166,9 @@ class PluginsCommand(Command):
             """ Print status for backend.dependencies. """
             if key == 1 or key == 3:
                 self.p_sub('Could not find `{}`', values[0])
-            elif key == 2:
-                self.p_sub('Could not find version `{}` of `{}`'.format(
-                    values[1], values[0]))
+                return
+            self.p_sub('Could not find version `{}` of `{}`'.format(
+                values[1], values[0]))
 
         to_install = backend.dependencies(self.args.server,
                                           to_install,
@@ -202,9 +202,10 @@ class PluginsCommand(Command):
                     self.p_sub('{} was allready installed.'.format(
                         plugin['plugin_name']))
                     break
-                self.p_sub(
-                    '{} is allready installed, but out of date'.format(
-                        plugin['plugin_name']))
+                elif i[0] == slug:
+                    self.p_sub(
+                        '{} is allready installed, but out of date'.format(
+                            plugin['plugin_name']))
             else:
                 plugins.append(plugin)
 
