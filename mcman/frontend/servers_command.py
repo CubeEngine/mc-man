@@ -3,7 +3,7 @@
 from urllib.error import URLError
 from mcman.backend import servers as backend
 from mcman.backend import common as utils
-from mcman.frontend.common import Command, UknownSubcommandException
+from mcman.frontend.common import Command
 
 
 class ServersCommand(Command):
@@ -25,12 +25,7 @@ class ServersCommand(Command):
         self.register_subcommand('identify', self.identify)
         self.register_subcommand('download', self.download)
 
-        try:
-            self.invoke_subcommand(args.subcommand)
-        except UknownSubcommandException as err:
-            self.p_main('Could not find subcommand {}'.format(err.subcommand))
-        except (ValueError, URLError) as err:
-            self.p_sub('Error: {}'.format(str(err)))
+        self.invoke_subcommand(args.subcommand, (ValueError, URLError))
 
     def error(self, error):
         """ Print error from SpaceGDN. """

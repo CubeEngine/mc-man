@@ -1,0 +1,1 @@
+""" Frontend code for mcman. """

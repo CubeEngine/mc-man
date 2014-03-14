@@ -104,14 +104,16 @@ class Command(object):
         """
         self.subcommands[name] = method
 
-    def invoke_subcommand(self, name):
+    def invoke_subcommand(self, name, exceptions):
         """ Invoke a subcommand.
 
         This method will invoke a previously registered subcommand, by the
-        name.
+        name. It will also catch the specified tuple of exceptions and just
+        display them as errors, without a stack trace.
 
-        One parameter is accepted:
-            name    The name of the subcommand to invoke.
+        two parameters are accepted:
+            name          The name of the subcommand to invoke.
+            exceptions    A tuple of exceptions to be catched
 
         Exceptions raised:
             UknownSubcommandException    If the subcommand wasn't found or
@@ -123,4 +125,10 @@ class Command(object):
         if not name in self.subcommands:
             raise UknownSubcommandException(name)
         else:
-            self.subcommands[name]()
+            try:
+                self.subcommands[name]()
+            except UknownSubcommandException as err:
+                self.p_main('Could not find subcommand {}'.format(
+                    err.subcommand))
+            except exceptions as err:
+                self.p_sub('Error: {}'.format(str(err)))

@@ -9,7 +9,7 @@ module in the backend package.
 from urllib.error import URLError
 from mcman.backend import plugins as backend
 from mcman.backend import common as utils
-from mcman.frontend.common import Command, UknownSubcommandException
+from mcman.frontend.common import Command
 
 
 class PluginsCommand(Command):
@@ -21,10 +21,10 @@ class PluginsCommand(Command):
         Command.__init__(self)
 
         self.server = args.server
-        self.version = args.version
         self.args = args
 
         backend.init(args.base_url, args.user_agent)
+        backend.VERSION = self.args.version
 
         self.register_subcommand('search', self.search)
         self.register_subcommand('info', self.info)
@@ -32,12 +32,7 @@ class PluginsCommand(Command):
         self.register_subcommand('download', self.download)
         self.register_subcommand('update', self.update)
 
-        try:
-            self.invoke_subcommand(args.subcommand)
-        except UknownSubcommandException as err:
-            self.p_main('Could not find subcommand {}'.format(err.subcommand))
-        except (ValueError, URLError) as err:
-            self.p_sub('Error: {}'.format(str(err)))
+        self.invoke_subcommand(args.subcommand, (ValueError, URLError))
 
     def search(self):
         """ Search for plugins. """
@@ -129,8 +124,7 @@ class PluginsCommand(Command):
         self.p_main('Looking up plugins on BukGet')
 
         new_versions = dict()
-        for yielded in backend.find_newest_versions(plugins, self.server,
-                                                    self.version):
+        for yielded in backend.find_newest_versions(plugins, self.server):
             if type(yielded) is tuple:
                 slug, version = yielded
                 new_versions[slug] = version
@@ -179,7 +173,6 @@ class PluginsCommand(Command):
         to_install = backend.dependencies(self.args.server,
                                           to_install,
                                           versions,
-                                          self.version,
                                           status_hook2)
 
         if len(to_install) < 1:
@@ -195,7 +188,7 @@ class PluginsCommand(Command):
             plugin = backend.download_details(self.server, slug,
                                               versions[slug]
                                               if slug in versions
-                                              else self.version)
+                                              else self.args.version)
 
             if plugin is None:
                 self.p_sub('Could not find plugin `{}` again'.format(slug))
@@ -204,9 +197,8 @@ class PluginsCommand(Command):
                 self.p_sub('Could not find version of `{}` again'.format(slug))
                 continue
 
-            for installed_plugin in installed:
-                if installed_plugin[0] == slug
-                and installed_plugin[1] >= plugin['versions'][0]['version']:
+            for i in installed:
+                if i[0] == slug and i[1] >= plugin['versions'][0]['version']:
                     self.p_sub('{} was allready installed.'.format(
                         plugin['plugin_name']))
                     break
@@ -244,9 +236,10 @@ class PluginsCommand(Command):
         self.p_main('Looking up versions on BukGet')
 
         to_update = list()
-        for plugin, i_version, name, path in installed:
+        for i in installed:
+            plugin, i_version, name = i[0], i[1], i[2]
             u_plugin = backend.download_details(self.server, plugin,
-                                                self.version)
+                                                self.args.version)
             if u_plugin is None or len(u_plugin['versions']) < 1:
                 self.p_sub('Could not find {} on BukGet!'.format(name))
                 continue

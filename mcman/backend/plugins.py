@@ -1,7 +1,5 @@
 """ The backend for the mcman command. """
 
-# TODO - Cleanup. Move all logic from the plugin command here.
-
 import os
 import bukget
 import yaml
@@ -9,10 +7,14 @@ from zipfile import ZipFile
 from mcman.backend import common as utils
 
 
+VERSION = 'release'
+
+
 def init(base, user_agent):
     """ Initialize the module.
 
-    This function just sets the base url and user agent for BukGet.
+    This function just sets the base url and user agent for BukGet, and it
+    sets the default version type.
 
     """
     bukget.BASE = base
@@ -107,7 +109,7 @@ def info(server, name):
     return plugin
 
 
-def find_newest_versions(plugins, server, version_type):
+def find_newest_versions(plugins, server):
     """ Find newest versions for the plugins.
 
     This is a generator. When a plugin in the plugins list has an update it is
@@ -116,15 +118,14 @@ def find_newest_versions(plugins, server, version_type):
     plugin does not have any updates, nothing is yielded.
 
     Three parameters are required:
-        plugins         A list of plugins, as returned by list_plugins()
-        server          The server the plugins are for.
-        version_type    The version type to find updates for.
+        plugins    A list of plugins, as returned by list_plugins()
+        server     The server the plugins are for.
 
     """
     for plugin in plugins:
         slug, version, name = plugin[0], plugin[1], plugin[2]
         plugin = bukget.plugin_details(server, slug,
-                                       version_type,
+                                       VERSION,
                                        fields='versions.version')
         if plugin is None:
             yield name
@@ -245,7 +246,7 @@ def find_plugins_folder():
     return '.'
 
 
-def dependencies(server, plugins, versions, v_type, status_hook):
+def dependencies(server, plugins, versions, status_hook):
     """ Get list of dependencies to install by list of plugins.
 
     This function will return a list containing all the plugins in the supplied
@@ -255,7 +256,6 @@ def dependencies(server, plugins, versions, v_type, status_hook):
         server         The server.
         plugins        A list of plugins.
         versions       A dictionary mapping from plugins to versions.
-        v_type         What version type to get.
         status_hook    A status hook, see the docs on resolve_dependencies.
 
     """
@@ -263,14 +263,13 @@ def dependencies(server, plugins, versions, v_type, status_hook):
     for plugin in plugins:
         resolve_dependencies(server,
                              plugin,
-                             v_type,
                              status_hook,
                              versions[plugin] if plugin in versions else None,
                              new_stack)
     return new_stack
 
 
-def resolve_dependencies(server, plugin_name, v_type, status_hook,
+def resolve_dependencies(server, plugin_name, status_hook,
                          version=None, stack=None):
     """ Resolve all dependencies of plugin.
 
@@ -284,7 +283,6 @@ def resolve_dependencies(server, plugin_name, v_type, status_hook,
     Parameters:
        server          The server the plugin is for.
        plugin_name     The name of the plugin.
-       v_type          The version type to get.
        status_hook     A status hook, explained later.
        version         An optional specific version of the plugin.
        dependencies    plugins that will allready be installed.
@@ -299,7 +297,7 @@ def resolve_dependencies(server, plugin_name, v_type, status_hook,
 
     """
     if version is None:
-        version = v_type
+        version = VERSION
     if stack is None:
         stack = list()
 
@@ -327,8 +325,7 @@ def resolve_dependencies(server, plugin_name, v_type, status_hook,
             status_hook(3, (dep,))
             continue
         if slug not in stack:
-            resolve_dependencies(server, slug, v_type, status_hook,
-                                 stack=stack)
+            resolve_dependencies(server, slug, status_hook, stack=stack)
 
     return stack
 
