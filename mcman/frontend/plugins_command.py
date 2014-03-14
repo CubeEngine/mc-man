@@ -34,6 +34,18 @@ class PluginsCommand(Command):
 
         self.invoke_subcommand(args.subcommand, (ValueError, URLError))
 
+    def status_find_plugins(self, key, values):
+        """ Print status for backend.find_plugins. """
+        self.p_sub('Could not find {}'.format(values[0]))
+
+    def status_dependencies(self, key, values):
+        """ Print status for backend.dependencies. """
+        if key == 1 or key == 3:
+            self.p_sub('Could not find `{}`', values[0])
+            return
+        self.p_sub('Could not find version `{}` of `{}`'.format(
+            values[1], values[0]))
+
     def search(self):
         """ Search for plugins. """
         query = self.args.query
@@ -152,28 +164,16 @@ class PluginsCommand(Command):
         """ Download plugins. """
         self.p_main('Finding plugins on BukGet')
 
-        def status_hook1(key, values):
-            """ Print status for backend.find_plugins. """
-            self.p_sub('Could not find {}'.format(values[0]))
-
         to_install, versions = backend.find_plugins(self.args.server,
                                                     self.args.plugins,
-                                                    status_hook=status_hook1)
+                                                    self.status_find_plugins)
 
         self.p_main('Resolving dependencies')
-
-        def status_hook2(key, values):
-            """ Print status for backend.dependencies. """
-            if key == 1 or key == 3:
-                self.p_sub('Could not find `{}`', values[0])
-                return
-            self.p_sub('Could not find version `{}` of `{}`'.format(
-                values[1], values[0]))
 
         to_install = backend.dependencies(self.args.server,
                                           to_install,
                                           versions,
-                                          status_hook2)
+                                          self.status_dependencies)
 
         if len(to_install) < 1:
             self.p_main('Found no plugins!')

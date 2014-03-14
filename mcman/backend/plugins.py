@@ -163,26 +163,31 @@ def download_plugin(plugin, prefix=""):
 
     if suffix == 'zip':
         print(' '*len(prefix) + 'Unzipping...', end=' ')
-        with ZipFile(full_name, 'r') as zipped:
-            folders = [x for x in zipped.namelist()
-                       if x.endswith('/')]
-            jars = [x for x in zipped.namelist()
-                    if x.endswith('.jar')]
-            strip_folder = False
-            if len(jars) == 0 and len(folders) > 0:
-                folder = folders[0]
-                jars = [x for x in zipped.namelist()
-                        if x.endswith('.jar')
-                        and x.startswith(folder)]
-                strip_folder = folder
-
-            for jar in jars:
-                utils.extract_file(zipped, jar,
-                                   target_folder + (
-                                       jar.split(strip_folder, 1)[1]
-                                       if strip_folder else jar))
+        unzip_plugin(full_name, target_folder)
         os.remove(full_name)
         print('Success')
+
+
+def unzip_plugin(target_file, target_folder):
+    """ Unzip a plugin that is packaged in a zip. """
+    with ZipFile(target_file, 'r') as zipped:
+        folders = [x for x in zipped.namelist()
+                   if x.endswith('/')]
+        jars = [x for x in zipped.namelist()
+                if x.endswith('.jar')]
+        strip_folder = False
+        if len(jars) == 0 and len(folders) > 0:
+            folder = folders[0]
+            jars = [x for x in zipped.namelist()
+                    if x.endswith('.jar')
+                    and x.startswith(folder)]
+            strip_folder = folder
+
+        for jar in jars:
+            utils.extract_file(zipped, jar,
+                               target_folder + (
+                                   jar.split(strip_folder, 1)[1]
+                                   if strip_folder else jar))
 
 
 def list_plugins():
