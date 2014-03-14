@@ -45,12 +45,14 @@ class PluginsCommand(Command):
 
         self.p_main('Searching for `{}` through BukGet'.format(query))
 
-        results = backend.search(query, self.args.size)
-
         results = [(result, '[{}]{}'.format(result['slug'],
                                             result['plugin_name']))
-                   for result in results]
+                   for result in backend.search(query, self.args.size)]
+
+        # Find lenght of longest slug + name
         max_len = max([len(p[1]) for p in results])
+
+        # Create the format
         frmt = '{{:<{}}} - {{}}'.format(max_len)
 
         self.p_main('Results:')
@@ -156,7 +158,8 @@ class PluginsCommand(Command):
         """ Download plugins. """
         self.p_main('Finding plugins on BukGet')
 
-        def status_hook1(id, values):
+        def status_hook1(key, values):
+            """ Print status for backend.find_plugins. """
             self.p_sub('Could not find {}'.format(values[0]))
 
         to_install, versions = backend.find_plugins(self.args.server,
@@ -165,10 +168,11 @@ class PluginsCommand(Command):
 
         self.p_main('Resolving dependencies')
 
-        def status_hook2(id, values):
-            if id == 1 or id == 3:
+        def status_hook2(key, values):
+            """ Print status for backend.dependencies. """
+            if key == 1 or key == 3:
                 self.p_sub('Could not find `{}`', values[0])
-            elif id == 2:
+            elif key == 2:
                 self.p_sub('Could not find version `{}` of `{}`'.format(
                     values[1], values[0]))
 
@@ -201,14 +205,14 @@ class PluginsCommand(Command):
                 continue
 
             for installed_plugin in installed:
-                if installed_plugin[0] == slug:
-                    if installed_plugin[1] >= plugin['versions'][0]['version']:
-                        self.p_sub('{} was allready installed.'.format(
-                            plugin['plugin_name']))
-                        break
-                    self.p_sub(
-                        '{} is allready installed, but out of date'.format(
-                            plugin['plugin_name']))
+                if installed_plugin[0] == slug
+                and installed_plugin[1] >= plugin['versions'][0]['version']:
+                    self.p_sub('{} was allready installed.'.format(
+                        plugin['plugin_name']))
+                    break
+                self.p_sub(
+                    '{} is allready installed, but out of date'.format(
+                        plugin['plugin_name']))
             else:
                 plugins.append(plugin)
 
@@ -223,14 +227,10 @@ class PluginsCommand(Command):
                                     for p in plugins]))
         self.p_blank()
 
-        if utils.ask('Continue to download?', skip=self.args.no_confirm):
-            prefix_format = '({{part:>{}}}/{{total}}) '.format(
-                len(str(len(plugins))))
-
-            for i in range(len(plugins)):
-                plugin = plugins[i]
-                prefix = prefix_format.format(total=len(plugins), part=i+1)
-                backend.download_plugin(plugin, prefix)
+        backend.download('Continue to download?',
+                         '({{part:>{}}}/{{total}}) '.format(
+                             len(str(len(plugins)))),
+                         plugins, self.args.no_confirm)
 
         self.p_blank()
         self.p_raw('Done!')

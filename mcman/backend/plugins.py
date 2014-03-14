@@ -10,6 +10,11 @@ from mcman.backend import common as utils
 
 
 def init(base, user_agent):
+    """ Initialize the module.
+
+    This function just sets the base url and user agent for BukGet.
+
+    """
     bukget.BASE = base
     bukget.USER_AGENT = user_agent
 
@@ -116,7 +121,8 @@ def find_newest_versions(plugins, server, version_type):
         version_type    The version type to find updates for.
 
     """
-    for slug, version, name, path in plugins:
+    for plugin in plugins:
+        slug, version, name = plugin[0], plugin[1], plugin[2]
         plugin = bukget.plugin_details(server, slug,
                                        version_type,
                                        fields='versions.version')
@@ -379,3 +385,23 @@ def download_details(server, plugin, version):
                                         + 'versions.filename,'
                                         + 'versions.hard_dependencies,'
                                         + 'versions.soft_dependencies')
+
+
+def download(question, frmt, plugins, skip=False):
+    """ Download plugins.
+
+    This function does the questioning, and installing of each plugin.
+
+    Parameters:
+        question    The question to ask the user.
+        frmt        The format to format the prefix with. Must support two
+                    parameters: total and part.
+        plugins     A list of the plugins to install.
+        skip        Whether to skip the confirmation.
+
+    """
+    if utils.ask(question, skip=skip):
+        for i in range(len(plugins)):
+            plugin = plugins[i]
+            prefix = frmt.format(total=len(plugins), part=i+1)
+            download_plugin(plugin, prefix)
