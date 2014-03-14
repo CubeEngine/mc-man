@@ -7,6 +7,7 @@ module in the backend package.
 """
 
 from urllib.error import URLError
+from mcman.status_handler import StatusHandler
 from mcman.backend import plugins as backend
 from mcman.backend import common as utils
 from mcman.frontend.common import Command
@@ -33,18 +34,6 @@ class PluginsCommand(Command):
         self.register_subcommand('update', self.update)
 
         self.invoke_subcommand(args.subcommand, (ValueError, URLError))
-
-    def status_find_plugins(self, key, values):
-        """ Print status for backend.find_plugins. """
-        self.p_sub('Could not find {}'.format(values[0]))
-
-    def status_dependencies(self, key, values):
-        """ Print status for backend.dependencies. """
-        if key == 1 or key == 3:
-            self.p_sub('Could not find `{}`', values[0])
-            return
-        self.p_sub('Could not find version `{}` of `{}`'.format(
-            values[1], values[0]))
 
     def search(self):
         """ Search for plugins. """
@@ -164,16 +153,27 @@ class PluginsCommand(Command):
         """ Download plugins. """
         self.p_main('Finding plugins on BukGet')
 
+        status_handler = StatusHandler()
+        status_handler.register_handler(1, lambda arguments:
+                                        self.p_sub('Could not find {}'.format(
+                                            arguments[0])))
         to_install, versions = backend.find_plugins(self.args.server,
                                                     self.args.plugins,
-                                                    self.status_find_plugins)
+                                                    status_handler.get_hook())
 
         self.p_main('Resolving dependencies')
 
-        to_install = backend.dependencies(self.args.server,
-                                          to_install,
-                                          versions,
-                                          self.status_dependencies)
+        status_handler = StatusHandler()
+        one_three = lambda arguments: \
+            self.p_sub('Could not find `{}`'.format(arguments))
+        two = lambda arguments: \
+            self.p_sub('Could not find version `{}` of `{}`'.format(
+                arguments[0], arguments[1]))
+        status_handler.register_handler(1, one_three)
+        status_handler.register_handler(2, two)
+        status_handler.register_handler(3, one_three)
+        to_install = backend.dependencies(self.args.server, to_install,
+                                          versions, status_handler.get_hook())
 
         if len(to_install) < 1:
             self.p_main('Found no plugins!')
@@ -182,32 +182,25 @@ class PluginsCommand(Command):
         self.p_main(
             'Resolving versions, and checking allready installed plugins')
 
-        installed = backend.list_plugins()
-        plugins = list()
-        for slug in to_install:
-            plugin = backend.download_details(self.server, slug,
-                                              versions[slug]
-                                              if slug in versions
-                                              else self.args.version)
+        status_handler = StatusHandler()
+        one = lambda argument: \
+            self.p_sub('Could not find plugin `{}` again'.format(argument))
+        two = lambda argument: \
+            self.p_sub('Could not find version of `{}` again'.format(
+                argument))
+        three = lambda argument: \
+            self.p_sub('{} was allready installed.'.format(
+                argument))
+        four = lambda argument: \
+            self.p_sub('{} is allready installed, but out of date'.format(
+                argument))
+        status_handler.register_handler(1, one)
+        status_handler.register_handler(2, two)
+        status_handler.register_handler(3, three)
+        status_handler.register_handler(4, four)
 
-            if plugin is None:
-                self.p_sub('Could not find plugin `{}` again'.format(slug))
-                continue
-            elif len(plugin['versions']) < 1:
-                self.p_sub('Could not find version of `{}` again'.format(slug))
-                continue
-
-            for i in installed:
-                if i[0] == slug and i[1] >= plugin['versions'][0]['version']:
-                    self.p_sub('{} was allready installed.'.format(
-                        plugin['plugin_name']))
-                    break
-                elif i[0] == slug:
-                    self.p_sub(
-                        '{} is allready installed, but out of date'.format(
-                            plugin['plugin_name']))
-            else:
-                plugins.append(plugin)
+        plugins = backend.find_updates(self.server, to_install, versions,
+                                       status_handler.get_hook())
 
         if len(plugins) < 1:
             self.p_main('No plugins left to install')

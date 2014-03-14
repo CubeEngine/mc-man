@@ -308,7 +308,7 @@ def resolve_dependencies(server, plugin_name, status_hook,
 
     plugin = bukget.find_by_name(server, plugin_name)
     if plugin is None:
-        status_hook(1, (plugin_name,))
+        status_hook(1, plugin_name)
         return stack
 
     plugin = bukget.plugin_details(server, plugin, version,
@@ -327,7 +327,7 @@ def resolve_dependencies(server, plugin_name, status_hook,
     for dep in plugin['versions'][0]['hard_dependencies']:
         slug = bukget.find_by_name(server, dep)
         if slug is None:
-            status_hook(3, (dep,))
+            status_hook(3, dep)
             continue
         if slug not in stack:
             resolve_dependencies(server, slug, status_hook, stack=stack)
@@ -363,7 +363,7 @@ def find_plugins(server, queries, status_hook):
         version = ''
         slug = bukget.find_by_name(server, plugin)
         if slug is None:
-            status_hook(1, (plugin,))
+            status_hook(1, plugin)
             continue
         if len(plugin_version) > 1:
             version = plugin_version[1]
@@ -407,3 +407,43 @@ def download(question, frmt, plugins, skip=False):
             plugin = plugins[i]
             prefix = frmt.format(total=len(plugins), part=i+1)
             download_plugin(plugin, prefix)
+
+
+def find_updates(server, to_install, versions, status_hook):
+    """ Find updates for plugins.
+
+    This function will also check if the plugins are allready installed.
+
+    Parameters:
+        server         The server
+        to_install     A list over plugins that should be installed
+        versions       A dict with optional specific versions for plugins
+        status_hook    A status hook
+
+    """
+    plugins = list()
+    installed = list_plugins()
+
+    for slug in to_install:
+        plugin = download_details(server, slug,
+                                  versions[slug]
+                                  if slug in versions
+                                  else VERSION)
+
+        if plugin is None:
+            status_hook(1, slug)
+            continue
+        elif len(plugin['versions']) < 1:
+            status_hook(2, slug)
+            continue
+
+        for i in installed:
+            if i[0] == slug and i[1] >= plugin['versions'][0]['version']:
+                status_hook(3, plugin['plugin_name'])
+                break
+            elif i[0] == slug:
+                status_hook(4, plugin['plugin_name'])
+        else:
+            plugins.append(plugin)
+
+    return plugins
