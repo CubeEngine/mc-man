@@ -219,13 +219,13 @@ def main():
     # Head and tail, they are mutually exclusive
     group = parent.add_mutually_exclusive_group()
     group.add_argument(
-        '--head',
+        '--head', '--size',
         metavar='size',
         type=int,
         dest='size',
         nargs='?',
-        default=80,
-        const=10,
+        default=10,
+        const=5,
         help='How many entries that should be displayed, from the top')
     group.add_argument(
         '--tail',
@@ -233,8 +233,8 @@ def main():
         type=negative,
         dest='size',
         nargs='?',
-        default=80,
-        const=-10,
+        default=10,
+        const=-5,
         help='How many entries that should be displayed, from the bottom')
     group.add_argument(
         '--no-confirm',

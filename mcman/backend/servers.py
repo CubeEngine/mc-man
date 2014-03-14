@@ -29,7 +29,6 @@ def channels(server):
 
 def versions(server, channel, size):
     server = spacegdn.get_id(jar=server)
-    channel = None
     if channel is not None:
         channel = spacegdn.get_id(jar=server, channel=channel)
     result = spacegdn.versions(jar=server, channel=channel)
@@ -50,7 +49,6 @@ def versions(server, channel, size):
 
 def builds(server, channel, version, size):
     server = spacegdn.get_id(jar=server)
-    channel = None
     if channel is not None:
         channel = spacegdn.get_id(jar=server, channel=channel)
     if version is not None:
@@ -73,14 +71,11 @@ def builds(server, channel, version, size):
 
 def get_builds(server, channel, version, build):
     server = spacegdn.get_id(jar=server)
-    channel = None
     if channel is not None:
         channel = spacegdn.get_id(jar=server, channel=channel)
-    version = None
     if version is not None:
         version = spacegdn.get_id(jar=server, channel=channel,
                                   version=version)
-    build = None
     if build is not None:
         build = spacegdn.get_id(jar=server, channel=channel,
                                 version=version,

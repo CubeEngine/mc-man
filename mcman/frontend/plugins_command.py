@@ -63,7 +63,6 @@ class PluginsCommand(Command):
 
         self.p_blank()
 
-
     def info(self):
         """ Display info about a plugin. """
         query = self.args.plugins
@@ -74,7 +73,7 @@ class PluginsCommand(Command):
             self.p_sub('Could not find `{}`'.format(query))
             return
 
-        self.p_main('Found {}'.format(plugin['plugin_name']))
+        self.p_main('Found {}:'.format(plugin['plugin_name']))
         self.p_blank()
 
         website = plugin['website']
@@ -84,12 +83,14 @@ class PluginsCommand(Command):
         categories = utils.list_names(plugin['categories'])
         stage = plugin['stage']
         name = plugin['plugin_name']
+        desciption = plugin['description'].strip()
 
-        self.p_sub('Name:       {}', name)
-        self.p_sub('Authors:    {}', authors)
-        self.p_sub('Website:    {}', website)
-        self.p_sub('Categories: {}', categories)
-        self.p_sub('Stage:      {}', stage)
+        self.p_sub('Name:        {}', name)
+        self.p_sub('Description: {}', desciption)
+        self.p_sub('Authors:     {}', authors)
+        self.p_sub('Website:     {}', website)
+        self.p_sub('Categories:  {}', categories)
+        self.p_sub('Stage:       {}', stage)
 
         self.p_blank()
         self.p_sub('Versions:')

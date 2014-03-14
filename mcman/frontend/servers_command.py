@@ -36,6 +36,18 @@ class ServersCommand(Command):
         """ Print error from SpaceGDN. """
         self.p_sub('Error from SpaceGDN: {}'.format(error['message']))
 
+    def result(self, head, results):
+        """ Print results with head. """
+        self.p_main(head)
+        self.p_blank()
+        if type(results) is str:
+            self.p_sub(results)
+        elif len(results) >= 1:
+            self.p_sub(utils.list_names(results))
+        else:
+            self.p_sub('No results...')
+        self.p_blank()
+
     def servers(self):
         """ List available servers. """
         self.p_main('Fetching server list from SpaceGDN')
@@ -45,10 +57,7 @@ class ServersCommand(Command):
         if type(jars) is not list:
             self.error(jars)
         else:
-            self.p_main('Available servers:')
-            self.p_blank()
-            self.p_sub(utils.list_names(jars))
-            self.p_blank()
+            self.result('Available servers:', jars)
 
     def channels(self):
         """ List available channels for a server. """
@@ -59,10 +68,7 @@ class ServersCommand(Command):
         if type(channels) is not list:
             self.error(channels)
         else:
-            self.p_main('Available channels:')
-            self.p_blank()
-            self.p_sub(utils.list_names(channels))
-            self.p_blank()
+            self.result('Available channels:', channels)
 
     def versions(self):
         """ List available versions of a server. """
@@ -74,13 +80,7 @@ class ServersCommand(Command):
         if type(versions) is not list:
             self.error(versions)
         else:
-            self.p_main('Available channels:')
-            self.p_blank()
-            if len(versions) < 1:
-                self.p_sub('No results...')
-            else:
-                self.p_sub(utils.list_names(versions))
-            self.p_blank()
+            self.result('Available channels:', versions)
 
     def builds(self):
         """ List available builds for a server. """
@@ -91,13 +91,7 @@ class ServersCommand(Command):
         if type(builds) is not list:
             self.error(builds)
         else:
-            self.p_main('Available channels:')
-            self.p_blank()
-            if len(builds) < 1:
-                self.p_sub('No results...')
-            else:
-                self.p_sub(utils.list_names(builds))
-            self.p_blank()
+            self.result('Available builds:', builds)
 
     def identify(self):
         """ Identify what server a jar file is. """
@@ -116,10 +110,8 @@ class ServersCommand(Command):
 
         server, channel, version, build = backend.get_roots(build)
 
-        self.p_main('Found build:')
-        self.p_blank()
-        self.p_sub('{} {} {} {}'.format(server, channel, version, build))
-        self.p_blank()
+        self.result('Found build:', '{} {} {} {}'.format(server, channel,
+                                                         version, build))
 
     def download(self):
         """ Download a server. """
@@ -138,11 +130,9 @@ class ServersCommand(Command):
 
         channel, version, build = backend.find_latest_build(result)
 
-        self.p_main('Found build:')
-        self.p_blank()
-        self.p_sub('{} {} {} {}'.format(self.args.server, channel,
-                                        version, build['build']))
-        self.p_blank()
+        self.result('Found build:', '{} {} {} {}'.format(self.args.server,
+                                                         channel, version,
+                                                         build['build']))
 
         if utils.ask('Continue to download?', skip=self.args.no_confirm):
             utils.download(build['url'], destination=self.args.output,
