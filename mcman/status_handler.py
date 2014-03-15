@@ -24,6 +24,6 @@ class StatusHandler(object):
             if key in self.statuses:
                 self.statuses[key](arguments)
             else:
-                print('No handler found for key {}'.format(key))
+                raise ValueError('No handler found for key {}'.format(key))
 
         return invoke

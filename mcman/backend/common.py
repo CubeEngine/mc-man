@@ -190,7 +190,7 @@ def get_term_width(term=1):
 
 
 def extract_file(zipped, file, dest):
-    """ Extract file from ZipFile archive to file.
+    """ Extract file from ZipFile archive to dest.
 
     This function will extract the file in `file` in the zip archive to the
     file in `dest` in the filesystem. Folders are handled correctly, too.
@@ -209,23 +209,23 @@ def extract_file(zipped, file, dest):
             dest.write(content)
 
 
-def ask(question, want_yes=True, skip=False):
+def ask(question, default=True, skip=False):
     """ Ask user for confirmation.
 
     This function accepts up to three parameters:
         question    The question to ask the user.
-        want_yes    If Yes is the default alternative. Defaults to True.
+        default    If Yes is the default alternative. Defaults to True.
         skip        If the confirmation should be skipped, and the question
                     printed just for illustration. Defaults to False.
 
     """
-    print(question, end=' [Y/n]: ' if want_yes else ' [y/N]: ')
+    print(question, end=' [Y/n]: ' if default else ' [y/N]: ')
     if skip:
         print('y')
-        return True
+        return default
     else:
         answer = input()
         if len(answer) == 0:
-            return want_yes
+            return default
         else:
             return 'y' in answer.lower()
