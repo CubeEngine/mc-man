@@ -1,7 +1,7 @@
 """ Tests for backend.common.py. """
 from mcman.backend import common
 from nose import with_setup
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 def test_levenshtein():
@@ -59,25 +59,29 @@ def test_replace_last():
     assert common.replace_last('aaa', 'a', 'b') == 'aab'
 
 
-def test_ask():
-    """ Test common.ask with yes or no as input. """
-    common.print = MagicMock()
-
-    common.input = MagicMock(return_value='Yes')
+@patch('builtins.print', MagicMock())
+@patch('builtins.input', MagicMock(return_value='Yes'))
+def test_ask_yes():
+    """ Test common.ask when user answers 'Yes'. """
     assert common.ask('') is True
+    assert common.ask('', default=False) is True
 
-    common.input = MagicMock(return_value='No')
+
+@patch('builtins.print', MagicMock())
+@patch('builtins.input', MagicMock(return_value='No'))
+def test_ask_no():
+    """ Test common.ask when user answers 'No'. """
     assert common.ask('') is False
-
-    common.input = MagicMock(return_value='')
-    assert common.ask('') is True
-
-    common.input = MagicMock(return_value='')
     assert common.ask('', default=False) is False
 
+
+@patch('builtins.print', MagicMock())
+@patch('builtins.input', MagicMock(return_value=''))
+def test_ask_empty():
+    """ Test common.ask when user answers nothing. """
+    assert common.ask('') is True
+    assert common.ask('', default=False) is False
     assert common.ask('', skip=True) is True
     assert common.ask('', default=False, skip=True) is False
-
-    common.input = input
 
 # TODO - Unit tests for extract_file, download and create_progressbar
