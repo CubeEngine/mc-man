@@ -214,7 +214,7 @@ def main():
         '--user-agent',
         metavar='agent',
         type=str,
-        default='mcman 0.1',
+        default='mcman ' + mcman.__version__,
         help='Alternative user agent to report to BukGet and SpaceGDN')
     # Head and tail, they are mutually exclusive
     group = parent.add_mutually_exclusive_group()
