@@ -76,6 +76,42 @@ class TestExctractFile(TestCase):
         assert os.path.isdir(self.test_folder + 'herp/bar')
 
 
+class TestDownload(TestCase):
+
+    """ Test common.download. """
+
+    def fake_urlretrieve(self, url, filename=None, reporthook=None):
+        assert url == self.url
+        assert filename == self.filename
+        assert reporthook == self.reporthook
+
+    def fakse_checksum_file(self, file):
+        return self.checksum
+
+    def fake_create_progressbar(prefix=None, width=80):
+        assert self.prefix == prefix
+
+    def fake_get_term_width(self):
+        return 80
+
+    def fake_print(self, *value, sep=' ', end='\n'):
+        if 'line' in self:
+            if not self.line.endswith('\n'):
+                self.line += sep.join(value) + end
+                return
+        self.line = sep.join(value) + end
+
+    def test_download_success(self):
+        @patch('urllib.request.urlretrieve', self.fake_urlretrieve)
+        @patch('mcman.backend.common.checksum_file', self.fakse_checksum_file)
+        @patch('mcman.backend.common.create_progressbar',
+               self.fake_create_progressbar)
+        @patch('mcman.backend.common.get_term_width', self.fake_get_term_width)
+        @patch('builtins.print', self.fake_print)
+        def test():
+            pass  # TODO
+
+
 def test_levenshtein():
     """ Test common.levenshtein. """
     assert common.levenshtein('herp', 'herpderp') == 4
