@@ -2,6 +2,78 @@
 from mcman.backend import common
 from nose import with_setup
 from unittest.mock import MagicMock, patch
+from unittest import TestCase
+from zipfile import ZipFile
+import os
+import shutil
+
+
+class TestChecksumFile(TestCase):
+
+    """ Test common.checksum_file. """
+
+    def setUp(self):
+        """ Setup. """
+        self.path = 'test_data/random.txt'
+        with open('test_data/random.md5', 'r') as file:
+            md5 = file.readline()
+            self.md5 = md5.strip()
+
+    def test_file(self):
+        """ Test with file object. """
+        with open(self.path, 'rb') as file:
+            md5 = common.checksum_file(file)
+            assert md5 == self.md5
+
+    def test_path(self):
+        """ Test with file path. """
+        md5 = common.checksum_file(self.path)
+        assert md5 == self.md5
+
+
+class TestExctractFile(TestCase):
+
+    """ Test common.extract_file. """
+
+    def setUp(self):
+        """ Set up. """
+        self.path = 'test_data/zipped.zip'
+        self.test_folder = '/tmp/test_extract_file/'
+        self.zipfile = ZipFile(self.path, 'r')
+        os.makedirs(self.test_folder)
+
+    def tearDown(self):
+        """ Tear down. """
+        self.zipfile.close()
+        shutil.rmtree(self.test_folder)
+
+    def test_extract_base_file(self):
+        """ Test common.extract_file with file in base of zip. """
+        common.extract_file(self.zipfile, 'foo.txt',
+                            self.test_folder + 'foo.txt')
+        with open(self.test_folder + 'foo.txt', 'r') as file:
+            assert file.readline() == 'foo\n'
+
+    def test_extract_base_folder(self):
+        """ Test common.extract_file with folder in base of zip. """
+        common.extract_file(self.zipfile, 'herp/', self.test_folder + 'herp/')
+        assert os.path.isdir(self.test_folder + 'herp')
+
+    def test_extract_sub_file(self):
+        """ Test common.extract_file with file in subfolder. """
+        common.extract_file(self.zipfile, 'herp/bar/baz.txt',
+                            self.test_folder + 'herp/bar/baz.txt')
+        assert os.path.isdir(self.test_folder + 'herp')
+        assert os.path.isdir(self.test_folder + 'herp/bar')
+        with open(self.test_folder + 'herp/bar/baz.txt', 'r') as file:
+            assert file.readline() == 'baz\n'
+
+    def test_extract_sub_folder(self):
+        """ Test common.extract_file with folder in subfolder. """
+        common.extract_file(self.zipfile, 'herp/bar/',
+                            self.test_folder + 'herp/bar/')
+        assert os.path.isdir(self.test_folder + 'herp')
+        assert os.path.isdir(self.test_folder + 'herp/bar')
 
 
 def test_levenshtein():
@@ -30,33 +102,10 @@ def test_list_names():
                              last_separator=' + ') == 'one; two + three'
 
 
-def setup_test_checksum_file():
-    """ Setup for test_checksum_file. """
-    with open('/tmp/mcman-test-file.checksum', 'w') as file:
-        file.write('Hello')
-        file.flush()
-
-
-def teardown_test_checksum_file():
-    """ Teardown for test_checksum_file. """
-    import os
-    os.remove('/tmp/mcman-test-file.checksum')
-
-
-@with_setup(setup_test_checksum_file, teardown_test_checksum_file)
-def test_checksum_file():
-    """ Test common.checksum_file. """
-    fasit = '8b1a9953c4611296a827abf8c47804d7'
-    with open('/tmp/mcman-test-file.checksum', 'rb') as file:
-        checksum = common.checksum_file(file)
-
-    assert checksum == fasit
-    assert checksum == common.checksum_file('/tmp/mcman-test-file.checksum')
-
-
 def test_replace_last():
     """ Test common.replace_last. """
     assert common.replace_last('aaa', 'a', 'b') == 'aab'
+    assert common.replace_last('a', 'a', 'b') == 'b'
 
 
 @patch('builtins.print', MagicMock())
@@ -84,4 +133,4 @@ def test_ask_empty():
     assert common.ask('', skip=True) is True
     assert common.ask('', default=False, skip=True) is False
 
-# TODO - Unit tests for extract_file, download and create_progressbar
+# TODO - Unit tests for download and create_progressbar
