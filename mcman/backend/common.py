@@ -183,9 +183,9 @@ def get_term_width(term=1):
 
     """
     try:
-        return struct.unpack('hh', fcntl.ioctl(term,
-                                               termios.TIOCGWINSZ,
-                                               '1234'))[1]
+        return struct.unpack('hh',
+                             fcntl.ioctl(term, termios.TIOCGWINSZ, '1234')
+                            )[1]
     except BaseException:
         return 80
 
