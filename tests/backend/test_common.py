@@ -213,8 +213,7 @@ def test_ask_empty():
 @patch('struct.unpack', MagicMock(return_value=[0, 127]))
 def test_get_term_width_success():
     """ Test common.get_term_width with (emulated) success. """
-    print(common.get_term_width())
-    #assert common.get_term_width() == 127
+    assert common.get_term_width() == 127
 
 @patch('struct.unpack', Mock(side_effect=Exception()))
 def test_get_term_width_exception():
