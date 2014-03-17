@@ -210,7 +210,7 @@ def test_ask_empty():
     assert common.ask('', default=False, skip=True) is False
 
 
-@patch('struct.unpack', MagicMock(return_value=127))
+@patch('struct.unpack', MagicMock(return_value=[0, 127]))
 def test_get_term_width_success():
     """ Test common.get_term_width with (emulated) success. """
     assert common.get_term_width() == 127
