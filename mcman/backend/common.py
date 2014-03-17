@@ -100,13 +100,14 @@ def download(url, destination=None, checksum=None, prefix='',
     term_width = get_term_width()
     pprefix = prefix + display_name
     progress = create_progress_bar(prefix=pprefix, width=term_width)
+    print(urlretrieve)
     urlretrieve(url, filename=destination, reporthook=progress)
 
     if checksum is not None and len(checksum) > 0:
         print('\n' + ' ' * len(prefix) + 'Checking checksum...', end=' ')
         actual_checksum = checksum_file(destination)
         if actual_checksum == checksum:
-            print('Sucess')
+            print('Success')
         else:
             os.remove(destination)
             print('The checksums did not match! The file was deleted.')
