@@ -103,10 +103,19 @@ class ServersCommand(Command):
             self.p_main('Found no build on SpaceGDN with matching checksum')
             return
 
-        server, channel, version, build = backend.get_roots(build)
+        server, channel, version, build_num = backend.get_roots(build)
+
+        self.p_main('Checking for updates in channel')
+
+        new_version, new_build = backend.find_newest(server, channel)
+        appendix = ''
+        if new_build > build_num:
+            appendix = ' -- Out of date. Newest build: {} {}'.format(
+                new_version, new_build)
 
         self.result('Found build:', '{} {} {} {}'.format(server, channel,
-                                                         version, build))
+                                                         version, build_num)
+                                    + appendix)
 
     def download(self):
         """ Download a server. """
