@@ -1,7 +1,7 @@
 """ Tests for backend.common.py. """
 from mcman.backend import common
 from nose import with_setup
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 from unittest import TestCase
 from zipfile import ZipFile
 import os
@@ -80,6 +80,30 @@ class TestDownload(TestCase):
 
     """ Test common.download. """
 
+    def setUp(self):
+        self.url = 'http://herp.derp.foo/bar.baz'
+        self.filename = 'bar.baz'
+        self.reporthook = 42
+        self.prefix = 'Prefix'
+        self.removed = False
+        self.checksum = 'HerpDerpFooBarBaz'
+        self.display_name = 'Displayed'
+
+        @patch('mcman.backend.common.checksum_file', self.fakse_checksum_file)
+        @patch('mcman.backend.common.create_progress_bar',
+               self.fake_create_progressbar)
+        @patch('mcman.backend.common.get_term_width',
+               MagicMock(return_value=80))
+        @patch('builtins.print', self.fake_print)
+        @patch('mcman.backend.common.urlretrieve', self.fake_urlretrieve)
+        @patch('os.remove', self.fake_remove)
+        def test(checksum, destination=self.filename, prefix=self.prefix,
+        	     display_name=self.display_name):
+            common.download(self.url, destination=destination, checksum=checksum,
+                            prefix=prefix, display_name=display_name)
+
+        self.test = test
+
     def fake_urlretrieve(self, url, filename=None, reporthook=None):
         assert url == self.url
         assert filename == self.filename
@@ -88,28 +112,43 @@ class TestDownload(TestCase):
     def fakse_checksum_file(self, file):
         return self.checksum
 
-    def fake_create_progressbar(prefix=None, width=80):
-        assert self.prefix == prefix
-
-    def fake_get_term_width(self):
-        return 80
+    def fake_create_progressbar(self, prefix=None, width=80):
+        assert self.prefix + self.display_name == prefix
+        return self.reporthook
 
     def fake_print(self, *value, sep=' ', end='\n'):
-        if 'line' in self:
+        value = [ str(v) for v in value ]
+        sep = str(sep)
+        end = str(end)
+        if hasattr(self, 'line'):
             if not self.line.endswith('\n'):
                 self.line += sep.join(value) + end
                 return
         self.line = sep.join(value) + end
 
+    def fake_remove(self, file):
+        self.removed = True
+
     def test_download_success(self):
-        @patch('urllib.request.urlretrieve', self.fake_urlretrieve)
-        @patch('mcman.backend.common.checksum_file', self.fakse_checksum_file)
-        @patch('mcman.backend.common.create_progressbar',
-               self.fake_create_progressbar)
-        @patch('mcman.backend.common.get_term_width', self.fake_get_term_width)
-        @patch('builtins.print', self.fake_print)
-        def test():
-            pass  # TODO
+        """ Test common.download with successful checksum. """
+        self.test(self.checksum)
+        assert self.line.endswith('Success\n')
+
+    def test_download_fail(self):
+        """ Test common.download with unsuccessful checksum. """
+        self.test('SomethingFalse')
+        assert self.removed
+
+    def test_download_no_displayname(self):
+        """ Test common.download without a display_name. """
+        self.display_name = 'bar.baz'
+        self.test(self.checksum, display_name=None)
+
+    def test_download_no_destination(self):
+        """ Test common.download without a destination. """
+        self.display_name = 'bar.baz'
+        self.destination = 'bar.baz'
+        self.test(self.checksum, destination=None, display_name=None)
 
 
 def test_levenshtein():
@@ -120,6 +159,7 @@ def test_levenshtein():
     assert common.levenshtein('herp', 'hederprp') == 4
     assert common.levenshtein('preherppost', 'preprehpost') == 4
     assert common.levenshtein('abcdef', 'abdce') == 3
+    assert common.levenshtein('1234', '') == 4
 
 
 def test_list_names():
@@ -169,4 +209,15 @@ def test_ask_empty():
     assert common.ask('', skip=True) is True
     assert common.ask('', default=False, skip=True) is False
 
-# TODO - Unit tests for download and create_progressbar
+
+@patch('struct.unpack', MagicMock(return_value=127))
+def test_get_term_width_success():
+    """ Test common.get_term_width with (emulated) success. """
+    assert common.get_term_width() == 127
+
+@patch('struct.unpack', Mock(side_effect=Exception()))
+def test_get_term_width_exception():
+    """ Test common.get_term_width with (emulated) failure. """
+    assert common.get_term_width() == 80
+
+# TODO - Unit tests for create_progressbar
