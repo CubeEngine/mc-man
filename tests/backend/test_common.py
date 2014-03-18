@@ -88,7 +88,7 @@ class TestDownload(TestCase):
         self.checksum = 'HerpDerpFooBarBaz'
         self.display_name = 'Displayed'
 
-        @patch('mcman.backend.common.checksum_file', self.fakse_checksum_file)
+        @patch('mcman.backend.common.checksum_file', self.fake_checksum_file)
         @patch('mcman.backend.common.create_progress_bar',
                self.fake_create_progressbar)
         @patch('mcman.backend.common.get_term_width',
@@ -109,7 +109,7 @@ class TestDownload(TestCase):
         assert filename == self.filename
         assert reporthook == self.reporthook
 
-    def fakse_checksum_file(self, file):
+    def fake_checksum_file(self, file):
         return self.checksum
 
     def fake_create_progressbar(self, prefix=None, width=80):
