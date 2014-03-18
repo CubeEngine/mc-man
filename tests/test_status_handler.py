@@ -56,3 +56,14 @@ def test_handler_overwrite():
 
     hook = handler.get_hook()
     hook(1, None)
+
+
+def test_handler_no_handler():
+    """ Test StatusHandler with missing handler. """
+    handler = StatusHandler()
+    try:
+        handler.get_hook()(1, None)
+    except ValueError:
+        assert True
+    else:
+        assert False

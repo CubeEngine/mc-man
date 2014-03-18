@@ -69,11 +69,10 @@ def search(query, size):
     # Calculate scores
     results = list()
     for plugin in search_results:
-        if len(plugin) == 0:
-            continue
-
-        score = plugin['popularity']['monthly'] - utils.levenshtein(
+        score = plugin['popularity']['monthly']
+        distance = utils.levenshtein(
             query, plugin['plugin_name'])
+        score -= distance
 
         results.append((score, plugin))
 

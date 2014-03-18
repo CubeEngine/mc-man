@@ -22,7 +22,7 @@ class UknownSubcommandException(BaseException):
             subcommand    The subcommand that was not found.
 
         """
-        BaseException.__init__('Could not find subcommand {}'
+        BaseException.__init__(self, 'Could not find subcommand {}'
                                .format(subcommand))
         self.subcommand = subcommand
 
@@ -104,7 +104,7 @@ class Command(object):
         """
         self.subcommands[name] = method
 
-    def invoke_subcommand(self, name, exceptions):
+    def invoke_subcommand(self, name, exceptions=()):
         """ Invoke a subcommand.
 
         This method will invoke a previously registered subcommand, by the
@@ -127,8 +127,5 @@ class Command(object):
         else:
             try:
                 self.subcommands[name]()
-            except UknownSubcommandException as err:
-                self.p_main('Could not find subcommand {}'.format(
-                    err.subcommand))
             except exceptions as err:
                 self.p_sub('Error: {}'.format(str(err)))

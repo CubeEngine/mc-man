@@ -1,7 +1,6 @@
-""" Tests for backend.common.py. """
+""" Tests for mcman.backend.common. """
 from mcman.backend import common
-from nose import with_setup
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 from unittest import TestCase
 from zipfile import ZipFile
 import os
@@ -98,9 +97,10 @@ class TestDownload(TestCase):
         @patch('mcman.backend.common.urlretrieve', self.fake_urlretrieve)
         @patch('os.remove', self.fake_remove)
         def test(checksum, destination=self.filename, prefix=self.prefix,
-        	     display_name=self.display_name):
-            common.download(self.url, destination=destination, checksum=checksum,
-                            prefix=prefix, display_name=display_name)
+                 display_name=self.display_name):
+            common.download(self.url, destination=destination,
+                            checksum=checksum, prefix=prefix,
+                            display_name=display_name)
 
         self.test = test
 
@@ -117,7 +117,7 @@ class TestDownload(TestCase):
         return self.reporthook
 
     def fake_print(self, *value, sep=' ', end='\n'):
-        value = [ str(v) for v in value ]
+        value = [str(v) for v in value]
         sep = str(sep)
         end = str(end)
         if hasattr(self, 'line'):
@@ -216,7 +216,7 @@ def test_get_term_width_success():
     # TODO - This doesn't work for some reason.
     # assert common.get_term_width() == 127
 
-@patch('struct.unpack', Mock(side_effect=Exception()))
+@patch('struct.unpack', MagicMock(side_effect=Exception()))
 def test_get_term_width_exception():
     """ Test common.get_term_width with (emulated) failure. """
     assert common.get_term_width() == 80
