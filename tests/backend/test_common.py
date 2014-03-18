@@ -216,7 +216,7 @@ def test_get_term_width_success():
     returned = common.get_term_width()
     assert returned == 127 or returned == 80
 
-@patch('struct.unpack', MagicMock(side_effect=Exception()))
+@patch('struct.unpack', MagicMock(side_effect=OSError()))
 def test_get_term_width_exception():
     """ Test common.get_term_width with (emulated) failure. """
     assert common.get_term_width() == 80
