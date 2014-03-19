@@ -1,0 +1,640 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"find",
+				"find_newest_versions"
+			],
+			[
+				"assert",
+				"assert_called_one_with"
+			],
+			[
+				"newest",
+				"newest_version"
+			],
+			[
+				"file",
+				"filename"
+			],
+			[
+				"back",
+				"backup_print"
+			],
+			[
+				"fake",
+				"fake_get_term_width"
+			],
+			[
+				"rem",
+				"removedirs  (function)"
+			],
+			[
+				"extract",
+				"extract_file"
+			],
+			[
+				"read",
+				"readline  (function)"
+			],
+			[
+				"build_n",
+				"build_number"
+			],
+			[
+				"buil",
+				"build_numbers"
+			],
+			[
+				"Status",
+				"StatusHandler"
+			],
+			[
+				"res",
+				"register_handler"
+			],
+			[
+				"ser",
+				"find_updates(server, to_install, versions, installed, status_hook)"
+			],
+			[
+				"status",
+				"status_hook"
+			],
+			[
+				"q",
+				"download(question, frmt, plugins, skip=False)"
+			],
+			[
+				"use",
+				"user_agent"
+			],
+			[
+				"get",
+				"get_roots  (function)"
+			],
+			[
+				"stat",
+				"status_hook"
+			],
+			[
+				"Buk",
+				"BukGet"
+			],
+			[
+				"URL",
+				"URLError"
+			],
+			[
+				"dest",
+				"destination"
+			],
+			[
+				"sub",
+				"subcommand"
+			],
+			[
+				"invok",
+				"invoke_subcommand"
+			],
+			[
+				"regi",
+				"register_subcommand"
+			],
+			[
+				"for",
+				"format"
+			],
+			[
+				"in",
+				"intended"
+			],
+			[
+				"check",
+				"checksum_file"
+			],
+			[
+				"find_pl",
+				"find_plugins_folder"
+			],
+			[
+				"new_ver",
+				"new_versions"
+			],
+			[
+				"plugin",
+				"plugin_name"
+			],
+			[
+				"dep",
+				"dependencies"
+			],
+			[
+				"to",
+				"to_install"
+			],
+			[
+				"list_",
+				"list_names"
+			],
+			[
+				"disp",
+				"display_name"
+			],
+			[
+				"pre",
+				"prefix_format"
+			],
+			[
+				"pro",
+				"progress_hook"
+			],
+			[
+				"pr_",
+				"pr_bar_left"
+			],
+			[
+				"version",
+				"versionnames"
+			],
+			[
+				"add",
+				"add_subparsers"
+			],
+			[
+				"gru",
+				"group"
+			],
+			[
+				"de",
+				"description"
+			],
+			[
+				"arg",
+				"argparse"
+			],
+			[
+				"popu",
+				"popularity_monthly"
+			],
+			[
+				"bukget",
+				"bukgetapi"
+			],
+			[
+				"f",
+				"formatting"
+			],
+			[
+				"search",
+				"search_results"
+			],
+			[
+				"p",
+				"popularity_monthly"
+			],
+			[
+				"pop",
+				"popularity_daily"
+			],
+			[
+				"po",
+				"popularity_monthly"
+			],
+			[
+				"searc",
+				"search_results"
+			],
+			[
+				"sear",
+				"search_result"
+			],
+			[
+				"Info",
+				"Info"
+			],
+			[
+				"if",
+				"ifmain	if __name__ == '__main__'"
+			],
+			[
+				"dis",
+				"displayNotification"
+			],
+			[
+				"dipl",
+				"displayNotification"
+			],
+			[
+				"web",
+				"webkitNotifications"
+			],
+			[
+				"disc",
+				"disconnected"
+			],
+			[
+				"per",
+				"permission"
+			],
+			[
+				"Noti",
+				"Notification"
+			],
+			[
+				"message",
+				"messageNotification"
+			],
+			[
+				"mess",
+				"messageNotification"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "setup.cfg",
+			"settings":
+			{
+				"buffer_size": 76,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 332.0,
+		"selected_items":
+		[
+			[
+				"enable",
+				"SublimeLinter: Enable Linting"
+			],
+			[
+				"disable",
+				"SublimeLinter: Disable Linting"
+			],
+			[
+				"package",
+				"Preferences: Browse Packages"
+			],
+			[
+				"lint",
+				"SublimeLinter: Enable Linting"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"settings",
+				"Preferences: Settings - User"
+			],
+			[
+				"toggle",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"linter",
+				"SublimeLinter: Disable Linter"
+			],
+			[
+				"terminal",
+				"Preferences: Terminal Key Bindings – Default"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 647.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import setup",
+			"import setup.py",
+			"os.listdir('.')",
+			"import os",
+			"ls",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/backend/plugins.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/backend/mcman.sublime-project",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/backend/common.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/backend/test_common.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/backend/test_plugins.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/frontend/test_common.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/test_status_handler.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/test_mcman.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/frontend/common.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/status_handler.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/mcman.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/frontend/servers_command.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/backend/servers.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/test_data/random.md5",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/setup.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/__init__.py",
+		"/home/tobias/Documents/Projects/SpaceGDN/loader/interfaces/json_loader.py",
+		"/home/tobias/Documents/Projects/SpaceGDN/loader/interfaces/mojang_loader.py",
+		"/home/tobias/Documents/Projects/SpaceGDN/loader/loader.py",
+		"/home/tobias/Documents/Projects/SpaceGDN/loader/interfaces/craftbukkit_loader.py",
+		"/home/tobias/Documents/Projects/SpaceGDN/loader/interfaces/jenkins_loader.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/frontend/__init__.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/tests/backend/__init__.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/sonar-project.properties",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/README.md",
+		"/home/tobias/Documents/Projects/pyspacegdn/spacegdn.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/frontend/plugins_command.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/frontend/__init__.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/backend/__init__.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/bin/mcman",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/plugins.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/servers.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/status.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/utils.py",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/requirements.txt",
+		"/home/tobias/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/tobias/Documents/Projects/CubeEngine/mcman/mcman/<frozen importlib._bootstrap>",
+		"/home/tobias/Documents/Projects/subway/src/js/models/models.js",
+		"/home/tobias/Documents/Projects/pybukget/bukget/orm.py",
+		"/home/tobias/Documents/Projects/CubeEngine/PlugMan/setup.py",
+		"/home/tobias/.config/sublime-text-3/Packages/User/SublimeLinter.sublime-settings",
+		"/home/tobias/.config/sublime-text-3/Packages/SublimeLinter/SublimeLinter.sublime-settings",
+		"/home/tobias/.config/sublime-text-3/Packages/Terminal/Default (Linux).sublime-keymap",
+		"/home/tobias/Documents/Projects/CubeEngine/PlugMan/README.md",
+		"/home/tobias/Documents/Projects/CubeEngine/PlugMan/plugman/utils.py",
+		"/home/tobias/Documents/Projects/CubeEngine/PlugMan/bin/plugman",
+		"/home/tobias/Documents/Projects/CubeEngine/PlugMan/plugman/plugman.py",
+		"/home/tobias/Documents/Projects/CubeEngine/PlugMan/plugman/cmd.py",
+		"/home/tobias/Documents/Projects/subway/lib/irclink.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/client.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/views/chat_application.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/views/user_list.js",
+		"/home/tobias/Documents/Projects/subway/views/index.jade",
+		"/home/tobias/Documents/Projects/subway/lib/ircmanager.js",
+		"/home/tobias/Documents/Projects/subway/lib/models.js",
+		"/home/tobias/Documents/Projects/subway/lib/restore.js",
+		"/home/tobias/Documents/Projects/subway/lib/socket.js",
+		"/home/tobias/Documents/Projects/subway/lib/subway.js",
+		"/home/tobias/Documents/Projects/subway/lib/webserver.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/collections.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/models.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/utils.js",
+		"/home/tobias/Documents/Projects/subway/assets/sounds/LICENSE.txt",
+		"/home/tobias/Documents/Projects/subway/assets/js/views/channel_list.js",
+		"/home/tobias/Documents/Projects/subway/assets/js/views/channel_tab.js"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+			"/home/tobias/Documents/Projects/subway/assets",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"Mock",
+			",)",
+			"self.args.",
+			"self.args.vers",
+			"v_type",
+			"dependencies",
+			"download",
+			"print(",
+			"info",
+			"sub_commands",
+			"sub-command",
+			".*ask\\(",
+			".*\\.ask\\(",
+			".*\\.ask(",
+			"ask(",
+			"open",
+			"self.args.version",
+			"list_plugins",
+			"sort",
+			"fields",
+			"try",
+			"resolve_dep",
+			"action=['\"(''')]store_true['\"(''')]",
+			"action=['\"(?:'''|\"\"\")]store_true['\"(?:'''|\"\"\")]",
+			"action=['\"]store['\"]",
+			"^((?:    |\\t)*)\"\"\"(.*?)\"\"\"$",
+			"^((    |\\t)*)\"\"\"(.*)\"\"\"$",
+			"^((    |\\t)*)'''(.*)'''$",
+			"metavar='.*[A-Z]'",
+			"metavar='([A-Z])",
+			"((    )*)(''')(.*) (''')",
+			"((    )*)(''')(.*)(''')",
+			":\\n((    )+)(''')(.*)(''')",
+			":\\n(    )+(''').*(''')",
+			"\"",
+			"description",
+			"set_default",
+			"\"",
+			"l ",
+			"k ",
+			"y",
+			"x",
+			"b ",
+			"a ",
+			"c2",
+			"c1",
+			"two",
+			"one",
+			"  {",
+			"console.log",
+			"messageNotification",
+			"addListener",
+			"irc.Client",
+			"addlistener",
+			"AWAY",
+			"You were",
+			"sounds",
+			"playSound",
+			"console.log"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": true,
+		"regex": false,
+		"replace_history":
+		[
+			"stack",
+			"subcommands",
+			"$1\"\"\"$2\"\"\"",
+			"$1\"\"\"$3\"\"\"",
+			"metavar='\\L$1",
+			"$1\"\"\"$4. \"\"\"",
+			"$1\"\"\"$4\"\"\"",
+			":\\n$1\"\"\"$4\"\"\"",
+			"'",
+			"char2 ",
+			"char1 ",
+			"char1",
+			"two",
+			"one",
+			"l ",
+			"k ",
+			"k",
+			"b",
+			"a",
+			"y",
+			"x"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "setup.cfg",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 76,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 25.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "mcman.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 224.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
