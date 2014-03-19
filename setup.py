@@ -15,14 +15,17 @@ setup(
                       'pyBukGet>=2.3',
                       'pySpaceGDN>=0.2'],
     classifiers=[
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: Apache Software License',
+        'Natural Language :: English',
+        'Operating System :: Unix',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
         'Topic :: System :: Systems Administration',
-        'Topic :: Utilities'
+        'Topic :: Utilities',
     ],
 )
