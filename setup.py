@@ -1,6 +1,28 @@
+# "mcman" - An utility for managing Minecraft server jars and plugins.
+# Copyright (C) 2014  Tobias Laundal <totokaka>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """ Setup file for PlugMan. """
 from setuptools import setup
+import os
 import mcman
+
+
+def read(fname):
+    """ Read a file. """
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name='mc-man',
@@ -8,7 +30,10 @@ setup(
     author=mcman.__author__,
     author_email='mail@totokaka.io',
     description='A Minecraft server jar and plugins manager',
+    license='GPLv3+',
+    long_description=read('README.md'),
     url='https://github.com/CubeEngineDev/mc-man',
+    platform='Unix',
     packages=['mcman', 'mcman.frontend', 'mcman.backend'],
     scripts=["bin/mcman"],
     install_requires=['PyYAML>=3.10',
@@ -18,7 +43,8 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: Apache Software License',
+        ('License :: OSI Approved :: GNU General Public License v3 or later '
+         '(GPLv3+)'),
         'Natural Language :: English',
         'Operating System :: Unix',
         'Programming Language :: Python',
