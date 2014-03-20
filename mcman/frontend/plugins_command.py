@@ -111,7 +111,6 @@ class PluginsCommand(Command):
         self.p_sub('Versions:')
 
         versions = plugin['versions']
-
         # Sorting
         if self.args.size >= 0:
             versions = versions[:min(self.args.size, len(versions))]

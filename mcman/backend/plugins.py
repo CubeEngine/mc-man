@@ -26,6 +26,41 @@ from mcman.backend import common as utils
 VERSION = 'release'
 
 
+class PluginCache(object):
+
+    """ Class to cache results from Bukget. """
+
+    def __init__(self):
+        """ Init. """
+        self._cache = dict()
+        self._name_cache = dict()
+
+    def details(self, server, slug, version='', fields=''):
+        if (server + slug) in self._cache:
+            result = self._cache[server + slug]
+            if type(fields) is str:
+                fields = fields.split(',')
+            for field in fields:
+                if not field in result and not '.' in field:
+                    print('partial update of {}'.format(slug))
+                    print(result.keys(), 'vs', fields)
+                    break
+            else:
+                return result
+        result = bukget.plugin_details(server, slug, version=version,
+                                       fields=fields)
+        self._cache[server + slug] = result
+        return result
+
+    def find_name(self, server, name):
+        if (server + name) in self._name_cache:
+            return self._name_cache[server + name]
+        else:
+            result = bukget.find_by_name(server, name)
+            self._name_cache[server + name] = result
+            return result
+
+
 def init(base, user_agent):
     """ Initialize the module.
 
@@ -35,6 +70,8 @@ def init(base, user_agent):
     """
     bukget.BASE = base
     bukget.USER_AGENT = user_agent
+    global cache
+    cache = PluginCache()
 
 
 def search(query, size):
@@ -107,19 +144,19 @@ def info(server, name):
     plugin was not found.
 
     """
-    slug = bukget.find_by_name(server, name)
+    slug = cache.find_name(server, name)
     if slug is None:
         return None
 
-    plugin = bukget.plugin_details(server, slug,
-                                   fields='website,dbo_page,'
-                                          + 'description,'
-                                          + 'versions.type,'
-                                          + 'versions.game_versions,'
-                                          + 'versions.version,'
-                                          + 'plugin_name,server,'
-                                          + 'authors,categories,'
-                                          + 'stage,slug')
+    plugin = cache.details(server, slug,
+                           fields='website,dbo_page,'
+                                  + 'description,'
+                                  + 'versions.type,'
+                                  + 'versions.game_versions,'
+                                  + 'versions.version,'
+                                  + 'plugin_name,server,'
+                                  + 'authors,categories,'
+                                  + 'stage,slug')
 
     return plugin
 
@@ -139,9 +176,8 @@ def find_newest_versions(plugins, server):
     """
     for plugin in plugins:
         slug, version, name = plugin[0], plugin[1], plugin[2]
-        plugin = bukget.plugin_details(server, slug,
-                                       VERSION,
-                                       fields='versions.version')
+        plugin = cache.details(server, slug,
+                               VERSION, fields='versions.version')
         if plugin is None:
             yield name
             continue
@@ -321,15 +357,12 @@ def resolve_dependencies(server, plugin_name, status_hook,
     if stack is None:
         stack = list()
 
-    plugin = bukget.find_by_name(server, plugin_name)
+    plugin = cache.find_name(server, plugin_name)
     if plugin is None:
         status_hook(1, plugin_name)
         return stack
 
-    plugin = bukget.plugin_details(server, plugin, version,
-                                   fields='slug,'
-                                          + 'versions.hard_dependencies,'
-                                          + 'versions.version')
+    plugin = download_details(server, plugin, version)
 
     if plugin['slug'] in stack:
         return stack
@@ -340,7 +373,7 @@ def resolve_dependencies(server, plugin_name, status_hook,
     stack.append(plugin['slug'])
 
     for dep in plugin['versions'][0]['hard_dependencies']:
-        slug = bukget.find_by_name(server, dep)
+        slug = cache.find_name(server, dep)
         if slug is None:
             status_hook(3, dep)
             continue
@@ -376,7 +409,7 @@ def find_plugins(server, queries, status_hook):
         plugin_version = query.rsplit('#', 1)
         plugin = plugin_version[0]
         version = ''
-        slug = bukget.find_by_name(server, plugin)
+        slug = cache.find_name(server, plugin)
         if slug is None:
             status_hook(1, plugin)
             continue
@@ -395,13 +428,13 @@ def download_details(server, plugin, version):
     about a plugin that is required when downloading it.
 
     """
-    return bukget.plugin_details(server, plugin, version,
-                                 fields='slug,plugin_name,versions.version,'
-                                        + 'versions.md5,versions.download,'
-                                        + 'versions.type,'
-                                        + 'versions.filename,'
-                                        + 'versions.hard_dependencies,'
-                                        + 'versions.soft_dependencies')
+    return cache.details(server, plugin, version,
+                         fields='slug,plugin_name,versions.version,'
+                                + 'versions.md5,versions.download,'
+                                + 'versions.type,'
+                                + 'versions.filename,'
+                                + 'versions.hard_dependencies,'
+                                + 'versions.soft_dependencies')
 
 
 def download(question, frmt, plugins, skip=False):
