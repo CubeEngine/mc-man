@@ -68,7 +68,7 @@ def test_info(fake_info, fake_find_slug):
     assert plugin['everything'] == 42
     fake_find_slug.assert_called_once_with('tha-server', 'This is the Name')
     fake_info.assert_called_once_with('tha-server', 'this.is-the_slug',
-                                      version=None,
+                                      version='',
                                       fields='website,dbo_page,description,'
                                              + 'versions.type,'
                                              + 'versions.game_versions,'
