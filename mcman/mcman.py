@@ -194,6 +194,9 @@ def setup_plugin_commands(sub_parsers, parent):
     download_parser.add_argument(
         'plugins', metavar='plugin', type=str, nargs='+',
         help='Plugin(s) to download, and extract if they are zipped.')
+    download_parser.add_argument(
+        '--ignore', metavar='plugin', type=str, nargs='+', dest='ignored',
+        help='Plugin(s) to ignore.')
     # update, sub command of plugin
     update_parser = sub_parsers.add_parser(
         'update', aliases=['u'],
@@ -204,6 +207,9 @@ def setup_plugin_commands(sub_parsers, parent):
     update_parser.add_argument(
         'plugins', metavar='plugin', type=str, nargs='*',
         help='Plugin(s) update.')
+    update_parser.add_argument(
+        '--ignore', metavar='plugin', type=str, nargs='+', dest='ignored',
+        help='Plugin(s) to ignore.')
     # list, sub command of plugin
     list_parser = sub_parsers.add_parser(
         'list', aliases=['l'],
@@ -282,6 +288,10 @@ def main():
         elif args.command is ServersCommand:
             server_parser.print_help()
         return
+
+    if 'ignored' in args:
+        if args.ignored is None:
+            args.ignored = []
 
     try:
         args.command(args)

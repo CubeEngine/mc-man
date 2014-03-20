@@ -424,7 +424,7 @@ def download(question, frmt, plugins, skip=False):
             download_plugin(plugin, prefix)
 
 
-def find_updates(server, to_install, versions, status_hook):
+def find_updates(server, to_install, versions, status_hook, ignored=None):
     """ Find updates for plugins.
 
     This function will also check if the plugins are allready installed.
@@ -436,6 +436,8 @@ def find_updates(server, to_install, versions, status_hook):
         status_hook    A status hook
 
     """
+    if ignored is None:
+        ignored = []
     plugins = list()
     installed = list_plugins()
 
@@ -449,7 +451,10 @@ def find_updates(server, to_install, versions, status_hook):
             status_hook(1, slug)
             continue
         elif len(plugin['versions']) < 1:
-            status_hook(2, slug)
+            status_hook(2, plugin['plugin_name'])
+            continue
+        elif plugin['slug'] in ignored or plugin['plugin_name'] in ignored:
+            status_hook(5, plugin['plugin_name'])
             continue
 
         for i in installed:

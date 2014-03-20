@@ -27,6 +27,7 @@ from mcman.status_handler import StatusHandler
 from mcman.backend import plugins as backend
 from mcman.backend import common as utils
 from mcman.frontend.common import Command
+import os
 
 
 class PluginsCommand(Command):
@@ -210,13 +211,16 @@ class PluginsCommand(Command):
         four = lambda argument: \
             self.p_sub('{} is allready installed, but out of date'.format(
                 argument))
+        five = lambda argument: \
+            self.p_sub('{} is ignored.'.format(argument))
         status_handler.register_handler(1, one)
         status_handler.register_handler(2, two)
         status_handler.register_handler(3, three)
         status_handler.register_handler(4, four)
+        status_handler.register_handler(5, five)
 
         plugins = backend.find_updates(self.server, to_install, versions,
-                                       status_handler.get_hook())
+                                       status_handler.get_hook(), ignored=self.args.ignored)
 
         if len(plugins) < 1:
             self.p_main('No plugins left to install')
@@ -242,12 +246,18 @@ class PluginsCommand(Command):
         self.p_main('Finding installed plugins')
 
         installed = backend.list_plugins()
+        jars = dict()
+        for i in installed:
+            jars[i[0]] = i[3]
 
         self.p_main('Looking up versions on BukGet')
 
         to_update = list()
         for i in installed:
             plugin, i_version, name = i[0], i[1], i[2]
+            if plugin in self.args.ignored or name in self.args.ignored:
+                self.p_sub('Ignoring {}'.format(name))
+                continue
             u_plugin = backend.download_details(self.server, plugin,
                                                 self.args.version)
             if u_plugin is None or len(u_plugin['versions']) < 1:
@@ -274,9 +284,9 @@ class PluginsCommand(Command):
         if utils.ask('Continue to update?', skip=self.args.no_confirm):
             prefix_format = '({{part:>{}}}/{{total}}) '.format(
                 len(str(len(to_update))))
-
             for i in range(len(to_update)):
                 plugin = to_update[i]
+                os.remove(jars[plugin['slug']])
                 prefix = prefix_format.format(total=len(to_update), part=i+1)
                 backend.download_plugin(plugin, prefix)
             self.p_blank()
