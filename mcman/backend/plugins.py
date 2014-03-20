@@ -17,8 +17,10 @@
 """ The backend for the mcman command. """
 
 import os
+import threading
 import bukget
 import yaml
+from queue import Queue
 from zipfile import ZipFile
 from mcman.backend import common as utils
 
@@ -161,7 +163,22 @@ def info(server, name):
     return plugin
 
 
-def find_newest_versions(plugins, server):
+def find_newest_versions_worker(id, server, work_queue, result_queue):
+    while not work_queue.empty():
+        plugin = work_queue.get()
+        slug, version, name = plugin[0], plugin[1], plugin[2]
+        plugin = cache.details(server, slug,
+                               VERSION, fields='versions.version')
+        if plugin is None:
+            result_queue.put(name)
+        else:
+            b_version = plugin['versions'][0]['version']
+            if b_version > version:
+                result_queue.put((slug, b_version))
+        work_queue.task_done()
+
+
+def find_newest_versions(plugins, server, workers=4):
     """ Find newest versions for the plugins.
 
     This is a generator. When a plugin in the plugins list has an update it is
@@ -174,16 +191,25 @@ def find_newest_versions(plugins, server):
         server     The server the plugins are for.
 
     """
+    work_queue = Queue()
     for plugin in plugins:
-        slug, version, name = plugin[0], plugin[1], plugin[2]
-        plugin = cache.details(server, slug,
-                               VERSION, fields='versions.version')
-        if plugin is None:
-            yield name
-            continue
-        b_version = plugin['versions'][0]['version']
-        if b_version > version:
-            yield slug, b_version
+        work_queue.put(plugin)
+    result_queue = Queue(len(plugins))
+    threads = list()
+    for i in range(workers):
+        thread = threading.Thread(target=find_newest_versions_worker,
+                                  args=(i, server, work_queue, result_queue))
+        thread.deamon = True
+        thread.start()
+        threads.append(thread)
+
+    work_queue.join()
+    for thread in threads:
+        thread.join()
+
+    while not result_queue.empty():
+        result = result_queue.get()
+        yield result
 
 
 def download_plugin(plugin, prefix=""):
@@ -241,19 +267,9 @@ def unzip_plugin(target_file, target_folder):
                                    if strip_folder else jar))
 
 
-def list_plugins():
-    """ List installed plugins.
-
-    Returns a set of four-tuples containing the slug, version, plugin_name and
-    path to the jar, in that order.
-
-    """
-    plugins = set()
-
-    folder = find_plugins_folder()
-    jars = [folder + '/' + f for f in os.listdir(folder)
-            if os.path.isfile(folder + '/' + f) and f.endswith('.jar')]
-    for jar in jars:
+def list_plugins_worker(id, jar_queue, result_queue):
+    while not jar_queue.empty():
+        jar = jar_queue.get()
         # We first search for a plugin with a published version with matching
         # checksum to ours.
         slug = None
@@ -285,7 +301,43 @@ def list_plugins():
                 else:
                     continue
             version = str(yml['version'])
-            plugins.add((slug, version, plugin_name, jar))
+            result_queue.put((slug, version, plugin_name, jar))
+        jar_queue.task_done()
+
+
+def list_plugins(workers=4):
+    """ List installed plugins.
+
+    Returns a set of four-tuples containing the slug, version, plugin_name and
+    path to the jar, in that order.
+
+    """
+    plugins = set()
+
+    folder = find_plugins_folder()
+    jars = [folder + '/' + f for f in os.listdir(folder)
+            if os.path.isfile(folder + '/' + f) and f.endswith('.jar')]
+
+    jar_queue = Queue()
+    for jar in jars:
+        jar_queue.put(jar)
+    result_queue = Queue(len(jars))
+    threads = list()
+    for i in range(workers):
+        thread = threading.Thread(target=list_plugins_worker,
+                                  args=(i, jar_queue, result_queue))
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
+
+    jar_queue.join()
+
+    for thread in threads:
+        thread.join()
+
+    plugins = list()
+    while not result_queue.empty():
+        plugins.append(result_queue.get())
 
     return plugins
 
@@ -325,8 +377,8 @@ def dependencies(server, plugins, versions, status_hook):
     return new_stack
 
 
-def resolve_dependencies(server, plugin_name, status_hook,
-                         version=None, stack=None):
+def resolve_dependencies(server, plugin_name, status_hook, version=None,
+                         stack=None):
     """ Resolve all dependencies of plugin.
 
     This function will recursively get a list of all dependencies of the
