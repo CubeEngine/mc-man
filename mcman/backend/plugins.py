@@ -170,12 +170,7 @@ def _dependencies(server, plugins, stack=None, v_type='Latest'):
     v_type = v_type.capitalize()
 
     # Resolve all the dependencies of the plugins
-    deps = list()
-    for plugin in plugins:
-        for version in plugin['versions']:
-            if type_fits(version['type'], v_type):
-                deps.extend(version['hard_dependencies'])
-                break
+    deps = extract_dependencies(plugins, v_type)
 
     # Filter out dependencies allready in the stack and
     # add all dependencies to the stack
@@ -465,12 +460,16 @@ def format_name(name):
     return name
 
 
-def remove_duplicate_plugins(plugins):
-    """ Return a new list without duplicates. """
+def remove_duplicate_plugins(plugins, field='slug'):
+    """ Return a new list without duplicates.
+
+    The `field` argument specifies what field to use as the unique.
+
+    """
     result = list()
     for plugin in plugins:
         for in_result in result:
-            if plugin['slug'] == in_result['slug']:
+            if plugin[field] == in_result[field]:
                 break
         else:
             result.append(plugin)
@@ -494,3 +493,23 @@ def extract_name_version(names):
         results.append(name)
 
     return results
+
+
+def extract_dependencies(plugins, v_type='Release'):
+    """ Extract dependencies from the plugin.
+
+    The `v_type` says what kind of version we want.
+
+    """
+    if not type(plugins) is list:
+        plugins = [plugins]
+
+    deps = list()
+
+    for plugin in plugins:
+        for version in plugin['versions']:
+            if type_fits(version['type'], v_type):
+                deps.extend(version['hard_dependencies'])
+                break
+
+    return deps

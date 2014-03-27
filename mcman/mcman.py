@@ -297,9 +297,8 @@ def main():
             server_parser.print_help()
         return
 
-    if 'ignored' in args:
-        if args.ignored is None:
-            args.ignored = []
+    if 'ignored' in args and args.ignored is None:
+        args.ignored = []
 
     try:
         args.command(args)
