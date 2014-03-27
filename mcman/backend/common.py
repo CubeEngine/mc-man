@@ -202,7 +202,7 @@ def get_term_width(term=1):
     try:
         return struct.unpack('hh',
                              fcntl.ioctl(term, termios.TIOCGWINSZ, '1234')
-                            )[1]
+                             )[1]
     except OSError:
         return 80
 
