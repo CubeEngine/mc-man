@@ -129,19 +129,13 @@ def dependencies(server, plugins, v_type='Latest', deps=True):
     if type(plugins) is not list:
         plugins = [plugins]
 
-    versions = dict()
-    new_plugins = list()
-    for name in plugins:
-        if '#' in name:
-            name, version = name.split('#')
-            versions[name.lower()] = version
-        new_plugins.append(name)
+    plugins, versions = extract_name_version(plugins)
 
     plugins = bukget.search(
         {
             'field': 'plugin_name',
             'action': 'in',
-            'value': new_plugins
+            'value': plugins
         },
         fields=fields)
 
@@ -150,14 +144,13 @@ def dependencies(server, plugins, v_type='Latest', deps=True):
             continue
 
         version = versions[plugin['plugin_name'].lower()]
-        version_list = None
 
         for ver in plugin['versions']:
             if ver['version'] == version:
-                version_list = [ver]
+                plugin['versions'] = [ver]
                 break
-
-        plugin['versions'] = version_list
+        else:
+            plugin['versions'] = None
 
     if deps:
         return _dependencies(server, plugins, v_type=v_type)
@@ -293,7 +286,7 @@ def unzip_plugin(target_file, target_folder):
             utils.extract_file(zipped, jar, destination)
 
 
-def parse_installed_plugins_worker(id, jar_queue, result_queue):
+def parse_installed_plugins_worker(jar_queue, result_queue):
     """ Worker function of list_plugins.
 
     This function takes jars in the `jar_queue`, calculates the checksum,
@@ -321,14 +314,14 @@ def parse_installed_plugins_worker(id, jar_queue, result_queue):
 
 
 def parse_installed_plugins(workers=4):
-    """ Parses installed plugins for some information.
+    """ Parse installed plugins for some information.
 
     The information is returned in a tuple like this:
         (jar checksum, main class, plugin name, plugin version, jar path)
 
     These tuples are put in a set.
-    """
 
+    """
     folder = find_plugins_folder() + '/'
     jars = [folder + f for f in os.listdir(folder)
             if os.path.isfile(folder + f) and f.endswith('.jar')]
@@ -340,9 +333,9 @@ def parse_installed_plugins(workers=4):
     result_queue = Queue(len(jars))
 
     threads = list()
-    for i in range(workers):
+    for _ in range(workers):
         thread = threading.Thread(target=parse_installed_plugins_worker,
-                                  args=(i, jar_queue, result_queue))
+                                  args=(jar_queue, result_queue))
         thread.daemon = True
         thread.start()
         threads.append(thread)
@@ -424,15 +417,14 @@ def find_plugins_folder():
 
 
 def select_newest_version(plugin, v_type="Release"):
-    """ Return the newest version in plugin which is compatible with `v_type.`
-    """
+    """ Return the newest version in plugin which is compatible `v_type`. """
     for version in plugin['versions']:
         if type_fits(version['type'], v_type):
             return version
 
 
 def select_installed_version(plugin):
-    """ Returns the installed version of the `plugin`.
+    """ Return the installed version of the `plugin`.
 
     This function raises an AssertionError if the plugin is not installed.
     Eg. 'installed_version' is not in `plugin`.
@@ -446,9 +438,7 @@ def select_installed_version(plugin):
 
 
 def type_fits(has, requires):
-    """ Returns whether the `has` version is compatible with the `requires`
-    version.
-    """
+    """ Return whether the `has` version is compatible with the `requires`. """
     has = has.lower()
     requires = requires.lower()
     if requires == 'latest' or has == 'release':
@@ -476,7 +466,7 @@ def format_name(name):
 
 
 def remove_duplicate_plugins(plugins):
-    """ Returns a new list without duplicates. """
+    """ Return a new list without duplicates. """
     result = list()
     for plugin in plugins:
         for in_result in result:
@@ -485,3 +475,22 @@ def remove_duplicate_plugins(plugins):
         else:
             result.append(plugin)
     return result
+
+
+def extract_name_version(names):
+    """ Extract names and versions for a list of names.
+
+    A tuple of a list with the names and a dict which maps from name in lower
+    to version.
+
+    """
+    versions = dict()
+    results = list()
+
+    for name in names:
+        if '#' in name:
+            name, version = name.split('#')
+            versions[name.lower()] = version
+        results.append(name)
+
+    return results

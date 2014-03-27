@@ -177,7 +177,8 @@ class PluginsCommand(Command):
 
         self.p_main('Finding plugins on BukGet')
         plugins = backend.dependencies(self.args.server, self.args.plugins,
-                                       self.args.version)
+                                       self.args.version,
+                                       deps=self.args.resolve_dependencies)
 
         to_install = list()
         for plugin in plugins:

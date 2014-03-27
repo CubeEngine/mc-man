@@ -222,9 +222,9 @@ def setup_plugin_commands(sub_parsers, parent):
     return parser
 
 
-def main():
-    """ Main function. """
-    # Parent parser:
+def setup_parse_command():
+    """ Setup commands, and parse them. """
+    # Parent parser
     parent = argparse.ArgumentParser(add_help=False)
 
     # Commands that can be used for all sub commands
@@ -275,7 +275,15 @@ def main():
     server_parser = setup_server_commands(sub_parsers, parent)
     plugin_parser = setup_plugin_commands(sub_parsers, parent)
 
+    return server_parser, plugin_parser, parser
+
+
+def main():
+    """ Main function. """
+    server_parser, plugin_parser, parser = setup_parse_command()
+
     args = parser.parse_args()
+
     if args.show_version:
         print('Version: {}'.format(mcman.__version__))
     # If there no command or subcommand is specified we print the help
