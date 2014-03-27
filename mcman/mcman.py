@@ -286,22 +286,19 @@ def main():
 
     if args.show_version:
         print('Version: {}'.format(mcman.__version__))
-    # If there no command or subcommand is specified we print the help
-    if not 'command' in args:
+    elif not 'command' in args:
         parser.print_help()
-        return
-    if not 'subcommand' in args:
+    elif not 'subcommand' in args:
         if args.command is PluginsCommand:
             plugin_parser.print_help()
         elif args.command is ServersCommand:
             server_parser.print_help()
-        return
+    else:
+        if 'ignored' in args and args.ignored is None:
+            args.ignored = []
 
-    if 'ignored' in args and args.ignored is None:
-        args.ignored = []
-
-    try:
-        args.command(args)
-    except KeyboardInterrupt:
-        print()
-        return
+        try:
+            args.command(args)
+        except KeyboardInterrupt:
+            print()
+            return

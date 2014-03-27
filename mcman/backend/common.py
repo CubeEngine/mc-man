@@ -247,3 +247,43 @@ def ask(question, default=True, skip=False):
             return default
         else:
             return 'y' in answer.lower()
+
+
+def type_fits(has, requires):
+    """ Return whether the `has` version is compatible with the `requires`. """
+    has = has.lower()
+    requires = requires.lower()
+    if requires == 'latest' or has == 'release':
+        return True
+    elif has == requires:
+        return True
+    elif requires == 'release':
+        return False
+    elif requires == 'alpha' and has == 'beta':
+        return True
+    return False
+
+
+def format_name(name):
+    """ Format the name.
+
+    If the name consists of multiple words they will be capitalized and put
+    together without spaces.
+
+    """
+    if ' ' in name:
+        words = name.split(' ')
+        name = ''.join([w.capitalize() for w in words])
+    return name
+
+
+def find_plugins_folder():
+    """ Find the plugins folder.
+
+    This will return the relative path to the plugins folder.
+    Currently either '.' or 'plugins' is returend.
+
+    """
+    if 'plugins' in os.listdir('.'):
+        return 'plugins'
+    return '.'

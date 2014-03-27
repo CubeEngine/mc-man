@@ -22,6 +22,7 @@ import bukget
 import yaml
 from queue import Queue
 from zipfile import ZipFile
+from mcman.backend.common import type_fits, format_name, find_plugins_folder
 from mcman.backend import common as utils
 
 
@@ -399,18 +400,6 @@ def list_plugins(workers=4):
     return results
 
 
-def find_plugins_folder():
-    """ Find the plugins folder.
-
-    This will return the relative path to the plugins folder.
-    Currently either '.' or 'plugins' is returend.
-
-    """
-    if 'plugins' in os.listdir('.'):
-        return 'plugins'
-    return '.'
-
-
 def select_newest_version(plugin, v_type="Release"):
     """ Return the newest version in plugin which is compatible `v_type`. """
     for version in plugin['versions']:
@@ -430,34 +419,6 @@ def select_installed_version(plugin):
     for version in plugin['versions']:
         if version['version'] == installed:
             return version
-
-
-def type_fits(has, requires):
-    """ Return whether the `has` version is compatible with the `requires`. """
-    has = has.lower()
-    requires = requires.lower()
-    if requires == 'latest' or has == 'release':
-        return True
-    elif has == requires:
-        return True
-    elif requires == 'release':
-        return False
-    elif requires == 'alpha' and has == 'beta':
-        return True
-    return False
-
-
-def format_name(name):
-    """ Format the name.
-
-    If the name consists of multiple words they will be capitalized and put
-    together without spaces.
-
-    """
-    if ' ' in name:
-        words = name.split(' ')
-        name = ''.join([w.capitalize() for w in words])
-    return name
 
 
 def remove_duplicate_plugins(plugins, field='slug'):
