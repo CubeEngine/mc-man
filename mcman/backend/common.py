@@ -163,6 +163,8 @@ def create_progress_bar(width, prefix=None):
 
         sys.stdout.write(text)
         sys.stdout.flush()
+
+    progress_hook(0, 1, 100)
     return progress_hook
 
 

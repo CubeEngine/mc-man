@@ -41,4 +41,4 @@ nosetests.xml
 .idea/
 
 coverage.xml
- *.sublime-workspace
+*.sublime-workspace

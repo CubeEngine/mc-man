@@ -68,7 +68,6 @@ def test_info(fake_info, fake_find_slug):
     assert plugin['everything'] == 42
     fake_find_slug.assert_called_once_with('tha-server', 'This is the Name')
     fake_info.assert_called_once_with('tha-server', 'this.is-the_slug',
-                                      version='',
                                       fields='website,dbo_page,description,'
                                              + 'versions.type,'
                                              + 'versions.game_versions,'
@@ -83,37 +82,3 @@ def test_info_plugin_not_found(fake_find_slug):
     plugins.init(None, None)
     plugin = plugins.info('herp', 'derp')
     assert plugin is None
-
-
-@patch('bukget.plugin_details',
-       return_value={'versions': [{'version': '1.0'}]})
-def test_find_newest_versions_one(fake_plugin_details):
-    """ Test one for plugins.find_newest_versions. """
-    plugins.init(None, None)
-    returned = plugins.find_newest_versions([('herp', '0.1', 'Herp')],
-                                            'derp').__next__()
-    assert returned[1] == '1.0'
-
-
-@patch('bukget.plugin_details',
-       return_value={'versions': [{'version': '1.0'}]})
-def test_find_newest_versions__two(fake_plugin_details):
-    """ Test two for plugins.find_newest_versions. """
-    plugins.init(None, None)
-    try:
-        plugins.find_newest_versions([('herp', '1.0', 'Herp')],
-                                     'derp').__next__()
-    except StopIteration:
-        assert True
-    else:
-        assert False
-
-
-@patch('bukget.plugin_details',
-       return_value=None)
-def test_find_newest_versions__three(fake_plugin_details):
-    """ Test three for plugins.find_newest_versions. """
-    plugins.init(None, None)
-    returned = plugins.find_newest_versions([('herp', '0.1', 'Herp')],
-                                            'derp').__next__()
-    assert returned == 'Herp'

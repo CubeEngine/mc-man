@@ -25,55 +25,14 @@ from zipfile import ZipFile
 from mcman.backend import common as utils
 
 
-VERSION = 'release'
-
-
-class PluginCache(object):
-
-    """ Class to cache results from Bukget. """
-
-    def __init__(self):
-        """ Init. """
-        self._cache = dict()
-        self._name_cache = dict()
-
-    def details(self, server, slug, version='', fields=''):
-        if (server + slug) in self._cache:
-            result = self._cache[server + slug]
-            if type(fields) is str:
-                fields = fields.split(',')
-            for field in fields:
-                if not field in result and not '.' in field:
-                    print('partial update of {}'.format(slug))
-                    print(result.keys(), 'vs', fields)
-                    break
-            else:
-                return result
-        result = bukget.plugin_details(server, slug, version=version,
-                                       fields=fields)
-        self._cache[server + slug] = result
-        return result
-
-    def find_name(self, server, name):
-        if (server + name) in self._name_cache:
-            return self._name_cache[server + name]
-        else:
-            result = bukget.find_by_name(server, name)
-            self._name_cache[server + name] = result
-            return result
-
-
 def init(base, user_agent):
     """ Initialize the module.
 
-    This function just sets the base url and user agent for BukGet, and it
-    sets the default version type.
+    This function just sets the base url and user agent for BukGet.
 
     """
     bukget.BASE = base
     bukget.USER_AGENT = user_agent
-    global cache
-    cache = PluginCache()
 
 
 def search(query, size):
@@ -112,14 +71,7 @@ def search(query, size):
         fields='slug,plugin_name,description,popularity.monthly',
         size=abs(size))
 
-    new_results = list()
-    for result in search_results:
-        for result2 in new_results:
-            if result2['slug'] == result['slug']:
-                break
-        else:
-            new_results.append(result)
-    search_results = new_results
+    search_results = remove_duplicate_plugins(search_results)
 
     # Calculate scores
     results = list()
@@ -146,347 +98,119 @@ def info(server, name):
     plugin was not found.
 
     """
-    slug = cache.find_name(server, name)
+    slug = bukget.find_by_name(server, name)
     if slug is None:
         return None
 
-    plugin = cache.details(server, slug,
-                           fields='website,dbo_page,'
-                                  + 'description,'
-                                  + 'versions.type,'
-                                  + 'versions.game_versions,'
-                                  + 'versions.version,'
-                                  + 'plugin_name,server,'
-                                  + 'authors,categories,'
-                                  + 'stage,slug')
+    plugin = bukget.plugin_details(server, slug,
+                                   fields='website,dbo_page,'
+                                          + 'description,'
+                                          + 'versions.type,'
+                                          + 'versions.game_versions,'
+                                          + 'versions.version,'
+                                          + 'plugin_name,server,'
+                                          + 'authors,categories,'
+                                          + 'stage,slug')
 
     return plugin
 
 
-def find_newest_versions_worker(id, server, work_queue, result_queue):
-    while not work_queue.empty():
-        plugin = work_queue.get()
-        slug, version, name = plugin[0], plugin[1], plugin[2]
-        plugin = cache.details(server, slug,
-                               VERSION, fields='versions.version')
-        if plugin is None:
-            result_queue.put(name)
-        else:
-            b_version = plugin['versions'][0]['version']
-            if b_version > version:
-                result_queue.put((slug, b_version))
-        work_queue.task_done()
+def dependencies(server, plugins, v_type='Latest'):
+    """ Resolve dependencies.
 
-
-def find_newest_versions(plugins, server, workers=4):
-    """ Find newest versions for the plugins.
-
-    This is a generator. When a plugin in the plugins list has an update it is
-    yielded as a tuple with the plugin slug and the newest version. If the
-    plugin is not found at BukGet, the plugin name is yielded alone. If a
-    plugin does not have any updates, nothing is yielded.
-
-    Three parameters are required:
-        plugins    A list of plugins, as returned by list_plugins()
-        server     The server the plugins are for.
+    This function will return a list of plugin dictionaries of all plugins
+    depending directly, or indirectly on the plugins in `plugins`. `plugins`
+    may be a list of plugin slugs, or a single plugin slug.
 
     """
-    work_queue = Queue()
+    fields = ('slug,plugin_name,versions.hard_dependencies,versions.type,'
+              'versions.version,versions.download,versions.filename,'
+              'versions.md5')
+    if type(plugins) is not list:
+        plugins = [plugins]
+
+    versions = dict()
+    new_plugins = list()
+    for name in plugins:
+        if '#' in name:
+            name, version = name.split('#')
+            versions[name.lower()] = version
+        new_plugins.append(name)
+
+    plugins = bukget.search(
+        {
+            'field': 'plugin_name',
+            'action': 'in',
+            'value': new_plugins
+        },
+        fields=fields)
+
     for plugin in plugins:
-        work_queue.put(plugin)
-    result_queue = Queue(len(plugins))
-    threads = list()
-    for i in range(workers):
-        thread = threading.Thread(target=find_newest_versions_worker,
-                                  args=(i, server, work_queue, result_queue))
-        thread.deamon = True
-        thread.start()
-        threads.append(thread)
-
-    work_queue.join()
-    for thread in threads:
-        thread.join()
-
-    while not result_queue.empty():
-        result = result_queue.get()
-        yield result
-
-
-def download_plugin(plugin, prefix=""):
-    """ Download plugin.
-
-    This function takes two parameters. The first is the plugin. The plugin
-    must be a dictionary returned by bukget with at least the following fields:
-        versions.download, plugin_name, versions.md5, versions.filename
-    The second parameter is a prefix to print before each output line,
-    typically a counter on which download this it:
-        ( 5/20)
-
-    """
-    target_folder = find_plugins_folder() + '/'
-
-    url = plugin['versions'][0]['download']
-    if ' ' in plugin['plugin_name']:
-        filename = ''.join([x.capitalize() for x
-                            in plugin['plugin_name'].split(' ')])
-    else:
-        filename = plugin['plugin_name']
-    md5 = plugin['versions'][0]['md5']
-    suffix = plugin['versions'][0]['filename'].split('.')[-1:][0]
-    full_name = target_folder + filename + '.' + suffix
-
-    utils.download(url, destination=full_name,
-                   checksum=md5, prefix=prefix, display_name=filename)
-
-    if suffix == 'zip':
-        print(' '*len(prefix) + 'Unzipping...', end=' ')
-        unzip_plugin(full_name, target_folder)
-        os.remove(full_name)
-        print('Success')
-
-
-def unzip_plugin(target_file, target_folder):
-    """ Unzip a plugin that is packaged in a zip. """
-    with ZipFile(target_file, 'r') as zipped:
-        folders = [x for x in zipped.namelist()
-                   if x.endswith('/')]
-        jars = [x for x in zipped.namelist()
-                if x.endswith('.jar')]
-        strip_folder = False
-        if len(jars) == 0 and len(folders) > 0:
-            folder = folders[0]
-            jars = [x for x in zipped.namelist()
-                    if x.endswith('.jar')
-                    and x.startswith(folder)]
-            strip_folder = folder
-
-        for jar in jars:
-            utils.extract_file(zipped, jar,
-                               target_folder + (
-                                   jar.split(strip_folder, 1)[1]
-                                   if strip_folder else jar))
-
-
-def list_plugins_worker(id, jar_queue, result_queue):
-    while not jar_queue.empty():
-        jar = jar_queue.get()
-        # We first search for a plugin with a published version with matching
-        # checksum to ours.
-        slug = None
-        plugin_name = None
-        checksum = utils.checksum_file(jar)
-        result = bukget.search({'field':  'versions.md5',
-                                'action': '=',
-                                'value':  checksum},
-                               fields='slug,versions.version,plugin_name')
-        if len(result) > 0:
-            slug = result[0]['slug']
-            plugin_name = result[0]['plugin_name']
-        # Then we search by main class
-        with ZipFile(jar, 'r') as zipped:
-            # If there is no plugin.yml in it
-            # we ignore it
-            if not 'plugin.yml' in zipped.namelist():
-                continue
-            yml = yaml.load(zipped.read('plugin.yml').decode())
-            if slug is None:
-                plugin_name = yml['name']
-                main = yml['main']
-                result = bukget.search({'field':  'main',
-                                        'action': '=',
-                                        'value':  main},
-                                       fields='slug,versions.version')
-                if len(result) > 0:
-                    slug = result[0]['slug']
-                else:
-                    continue
-            version = str(yml['version'])
-            result_queue.put((slug, version, plugin_name, jar))
-        jar_queue.task_done()
-
-
-def list_plugins(workers=4):
-    """ List installed plugins.
-
-    Returns a set of four-tuples containing the slug, version, plugin_name and
-    path to the jar, in that order.
-
-    """
-    plugins = set()
-
-    folder = find_plugins_folder()
-    jars = [folder + '/' + f for f in os.listdir(folder)
-            if os.path.isfile(folder + '/' + f) and f.endswith('.jar')]
-
-    jar_queue = Queue()
-    for jar in jars:
-        jar_queue.put(jar)
-    result_queue = Queue(len(jars))
-    threads = list()
-    for i in range(workers):
-        thread = threading.Thread(target=list_plugins_worker,
-                                  args=(i, jar_queue, result_queue))
-        thread.daemon = True
-        thread.start()
-        threads.append(thread)
-
-    jar_queue.join()
-
-    for thread in threads:
-        thread.join()
-
-    plugins = list()
-    while not result_queue.empty():
-        plugins.append(result_queue.get())
-
-    return plugins
-
-
-def find_plugins_folder():
-    """ Find the plugins folder.
-
-    This will return the relative path to the plugins folder.
-    Currently either '.' or 'plugins' is returend.
-
-    """
-    if 'plugins' in os.listdir('.'):
-        return 'plugins'
-    return '.'
-
-
-def dependencies(server, plugins, versions, status_hook):
-    """ Get list of dependencies to install by list of plugins.
-
-    This function will return a list containing all the plugins in the supplied
-    list of plugins plus all their dependencies.
-
-    Parameters:
-        server         The server.
-        plugins        A list of plugins.
-        versions       A dictionary mapping from plugins to versions.
-        status_hook    A status hook, see the docs on resolve_dependencies.
-
-    """
-    new_stack = list()
-    for plugin in plugins:
-        resolve_dependencies(server,
-                             plugin,
-                             status_hook,
-                             versions[plugin] if plugin in versions else None,
-                             new_stack)
-    return new_stack
-
-
-def resolve_dependencies(server, plugin_name, status_hook, version=None,
-                         stack=None):
-    """ Resolve all dependencies of plugin.
-
-    This function will recursively get a list of all dependencies of the
-    plugin and the plugin itself. This means that the returned list
-    contains all the plugins needed to install.
-
-    A ValueError will be raised if a plugin isn't found. This can either be
-    the plugin itself, or any of it's dependencies.
-
-    Parameters:
-       server          The server the plugin is for.
-       plugin_name     The name of the plugin.
-       status_hook     A status hook, explained later.
-       version         An optional specific version of the plugin.
-       dependencies    plugins that will allready be installed.
-
-    The status hook should be a function that accepts an integer and a tuple.
-    The integer says what status it is, and the tuple contains the values.
-    Here is a list of the statuses:
-        1 - Plugin not found on BukGet. Values: plugin name
-        2 - Version not found on BukGet. Values: plugin name, version that was
-            tried.
-        3 - Dependency not found on BukGet. Values: dependency name
-
-    """
-    if version is None:
-        version = VERSION
-    if stack is None:
-        stack = list()
-
-    plugin = cache.find_name(server, plugin_name)
-    if plugin is None:
-        status_hook(1, plugin_name)
-        return stack
-
-    plugin = download_details(server, plugin, version)
-
-    if plugin['slug'] in stack:
-        return stack
-    if len(plugin['versions']) < 1:
-        status_hook(2, (plugin_name, version))
-        return stack
-
-    stack.append(plugin['slug'])
-
-    for dep in plugin['versions'][0]['hard_dependencies']:
-        slug = cache.find_name(server, dep)
-        if slug is None:
-            status_hook(3, dep)
+        if not plugin['plugin_name'].lower() in versions:
             continue
-        if slug not in stack:
-            resolve_dependencies(server, slug, status_hook, stack=stack)
+
+        version = versions[plugin['plugin_name'].lower()]
+        version_list = None
+
+        for ver in plugin['versions']:
+            if ver['version'] == version:
+                version_list = [ver]
+                break
+
+        plugin['versions'] = version_list
+
+    return _dependencies(server, plugins, v_type=v_type)
+
+
+def _dependencies(server, plugins, stack=None, v_type='Latest'):
+    """ Undocumented recursive, internal function. """
+    fields = ('slug,plugin_name,versions.hard_dependencies,versions.type,'
+              'versions.version,versions.download,versions.filename,'
+              'versions.md5')
+
+    # Sanitizing of parameters
+    if stack is None:
+        stack = plugins[:]
+    v_type = v_type.capitalize()
+
+    # Resolve all the dependencies of the plugins
+    deps = list()
+    for plugin in plugins:
+        for version in plugin['versions']:
+            if type_fits(version['type'], v_type):
+                deps.extend(version['hard_dependencies'])
+                break
+
+    # Filter out dependencies allready in the stack and
+    # add all dependencies to the stack
+    # From this point on the stack contains all dependencies resolved so far,
+    # and dependencies contains all dependencies that are new of this level.
+    for dependency in deps:
+        for installed in stack:
+            if installed['plugin_name'] == dependency:
+                deps.remove(dependency)
+                break
+
+    # If there are any plugins whose dependencies are not in the stack
+    if len(deps) > 0:
+        search_results = bukget.search(
+            {
+                'field': 'plugin_name',
+                'action': 'in',
+                'value': deps
+            },
+            fields=fields)
+
+        for plugin in search_results:
+            for in_stack in stack:
+                if in_stack['slug'] == plugin['slug']:
+                    break
+            else:
+                stack.append(plugin)
+
+        _dependencies(server, search_results, stack, v_type)
 
     return stack
-
-
-def find_plugins(server, queries, status_hook):
-    """ Find plugins.
-
-    Parameters:
-        server         Server type the plugins are for
-        queryies       Plugins to try and find.
-        status_hook    A status hook, see below.
-
-    One of the parameters is a status hook. It should be a function that
-    accepts an integer and a tuple. The integer is the status id, the tuple
-    contains the values.
-
-    Statuses:
-        1 - Plugin not found. Values: plugin
-
-    A tuple of a list and dict is returned. the list contains the plugins to
-    install, while the versions dict contains specific versions.
-
-    """
-    to_install = list()
-    versions = dict()
-
-    for query in queries:
-        plugin_version = query.rsplit('#', 1)
-        plugin = plugin_version[0]
-        version = ''
-        slug = cache.find_name(server, plugin)
-        if slug is None:
-            status_hook(1, plugin)
-            continue
-        if len(plugin_version) > 1:
-            version = plugin_version[1]
-            versions[slug] = version
-        to_install.append(slug)
-
-    return to_install, versions
-
-
-def download_details(server, plugin, version):
-    """ Get details required for download.
-
-    This function is just a wrapper around bukget, that will get the details
-    about a plugin that is required when downloading it.
-
-    """
-    return cache.details(server, plugin, version,
-                         fields='slug,plugin_name,versions.version,'
-                                + 'versions.md5,versions.download,'
-                                + 'versions.type,'
-                                + 'versions.filename,'
-                                + 'versions.hard_dependencies,'
-                                + 'versions.soft_dependencies')
 
 
 def download(question, frmt, plugins, skip=False):
@@ -509,46 +233,252 @@ def download(question, frmt, plugins, skip=False):
             download_plugin(plugin, prefix)
 
 
-def find_updates(server, to_install, versions, status_hook, ignored=None):
-    """ Find updates for plugins.
+def download_plugin(plugin, prefix=''):
+    """ Download plugin.
 
-    This function will also check if the plugins are allready installed.
-
-    Parameters:
-        server         The server
-        to_install     A list over plugins that should be installed
-        versions       A dict with optional specific versions for plugins
-        status_hook    A status hook
+    This function takes two parameters. The first is the plugin. The plugin
+    must be a dictionary returned by bukget with at least the following fields:
+        versions.download, plugin_name, versions.md5, versions.filename
+    The second parameter is a prefix to print before each output line,
+    typically a counter on which download this it. Example:
+        ( 5/20)
 
     """
-    if ignored is None:
-        ignored = []
-    plugins = list()
-    installed = list_plugins()
+    target_folder = find_plugins_folder() + '/'
 
-    for slug in to_install:
-        plugin = download_details(server, slug,
-                                  versions[slug]
-                                  if slug in versions
-                                  else VERSION)
+    url = plugin['versions'][0]['download']
+    filename = format_name(plugin['plugin_name'])
+    md5 = plugin['versions'][0]['md5']
+    suffix = plugin['versions'][0]['filename'].split('.')[-1]
 
-        if plugin is None:
-            status_hook(1, slug)
-            continue
-        elif len(plugin['versions']) < 1:
-            status_hook(2, plugin['plugin_name'])
-            continue
-        elif plugin['slug'] in ignored or plugin['plugin_name'] in ignored:
-            status_hook(5, plugin['plugin_name'])
-            continue
+    full_name = target_folder + filename + '.' + suffix
 
-        for i in installed:
-            if i[0] == slug and i[1] >= plugin['versions'][0]['version']:
-                status_hook(3, plugin['plugin_name'])
-                break
-            elif i[0] == slug:
-                status_hook(4, plugin['plugin_name'])
-        else:
-            plugins.append(plugin)
+    utils.download(url, destination=full_name,
+                   checksum=md5, prefix=prefix, display_name=filename)
+
+    if suffix == 'zip':
+        print(' '*len(prefix) + 'Unzipping...', end=' ')
+        unzip_plugin(full_name, target_folder)
+        os.remove(full_name)
+        print('Success')
+
+
+def unzip_plugin(target_file, target_folder):
+    """ Unzip a plugin that is packaged in a zip. """
+    with ZipFile(target_file, 'r') as zipped:
+        folders = [x for x in zipped.namelist()
+                   if x.endswith('/')]
+        jars = [x for x in zipped.namelist()
+                if x.endswith('.jar')]
+
+        strip_folder = False
+        if len(jars) == 0 and len(folders) > 0:
+            folder = folders[0]
+            # All jars in folder
+            jars = [x for x in zipped.namelist()
+                    if x.endswith('.jar')
+                    and x.startswith(folder)]
+            strip_folder = folder
+
+        for jar in jars:
+            destination = target_folder
+            if strip_folder:
+                destination += jar.split(strip_folder, 1)[1]
+            else:
+                destination += jar
+
+            utils.extract_file(zipped, jar, destination)
+
+
+def parse_installed_plugins_worker(id, jar_queue, result_queue):
+    """ Worker function of list_plugins.
+
+    This function takes jars in the `jar_queue`, calculates the checksum,
+    and extracts the main class, name and version and push this data to the
+    `result_queue`.
+
+    """
+    while not jar_queue.empty():
+        jar = jar_queue.get()
+
+        checksum = utils.checksum_file(jar)
+
+        with ZipFile(jar, 'r') as zipped:
+            if not 'plugin.yml' in zipped.namelist():
+                continue
+
+            yml = yaml.load(zipped.read('plugin.yml').decode())
+            plugin_name = yml['name']
+            main = yml['main']
+            version = str(yml['version'])
+
+            result_queue.put((checksum, main, plugin_name, version, jar))
+
+        jar_queue.task_done()
+
+
+def parse_installed_plugins(workers=4):
+    """ Parses installed plugins for some information.
+
+    The information is returned in a tuple like this:
+        (jar checksum, main class, plugin name, plugin version, jar path)
+
+    These tuples are put in a set.
+    """
+
+    folder = find_plugins_folder() + '/'
+    jars = [folder + f for f in os.listdir(folder)
+            if os.path.isfile(folder + f) and f.endswith('.jar')]
+
+    jar_queue = Queue()
+    for jar in jars:
+        jar_queue.put(jar)
+
+    result_queue = Queue(len(jars))
+
+    threads = list()
+    for i in range(workers):
+        thread = threading.Thread(target=parse_installed_plugins_worker,
+                                  args=(i, jar_queue, result_queue))
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
+
+    # Wait for all jars to be claimed
+    jar_queue.join()
+
+    # Wait for all threads to finish
+    for thread in threads:
+        thread.join()
+
+    plugins = set()
+    while not result_queue.empty():
+        plugins.add(result_queue.get())
 
     return plugins
+
+
+def list_plugins(workers=4):
+    """ List installed plugins.
+
+    Returns a list of plugin dicts with basic information about the plugin and
+    it's versions. Two additional fields exists in these dicts;
+    installed_version and installed_file.
+
+    """
+    fields = ('slug,plugin_name,versions.hard_dependencies,versions.type,'
+              'versions.version,versions.download,versions.filename,'
+              'versions.md5')
+
+    plugins = parse_installed_plugins(workers)
+
+    results = bukget.search(
+        {
+            'field': 'versions.checksum',
+            'action': 'in',
+            'value': [plugin[0] for plugin in plugins]
+        },
+        fields=fields)
+
+    results += bukget.search(
+        {
+            'field': 'main',
+            'action': 'in',
+            'value': [plugin[1] for plugin in plugins]
+        }, {
+            'field': 'plugin_name',
+            'action': 'in',
+            'value': [plugin[2] for plugin in plugins]
+        },
+        fields=fields)
+
+    results = remove_duplicate_plugins(results)
+
+    for plugin in results:
+        i_plugin = None
+        for installed in plugins:
+            if installed[2] == plugin['plugin_name']:
+                plugin['installed_version'] = installed[3]
+                plugin['installed_file'] = installed[4]
+                i_plugin = installed
+
+        if i_plugin is not None:
+            plugins.remove(i_plugin)
+
+    return results
+
+
+def find_plugins_folder():
+    """ Find the plugins folder.
+
+    This will return the relative path to the plugins folder.
+    Currently either '.' or 'plugins' is returend.
+
+    """
+    if 'plugins' in os.listdir('.'):
+        return 'plugins'
+    return '.'
+
+
+def select_newest_version(plugin, v_type="Release"):
+    """ Return the newest version in plugin which is compatible with `v_type.`
+    """
+    for version in plugin['versions']:
+        if type_fits(version['type'], v_type):
+            return version
+
+
+def select_installed_version(plugin):
+    """ Returns the installed version of the `plugin`.
+
+    This function raises an AssertionError if the plugin is not installed.
+    Eg. 'installed_version' is not in `plugin`.
+
+    """
+    assert 'installed_version' in plugin
+    installed = plugin['installed_version']
+    for version in plugin['versions']:
+        if version['version'] == installed:
+            return version
+
+
+def type_fits(has, requires):
+    """ Returns whether the `has` version is compatible with the `requires`
+    version.
+    """
+    has = has.lower()
+    requires = requires.lower()
+    if requires == 'latest' or has == 'release':
+        return True
+    elif has == requires:
+        return True
+    elif requires == 'release':
+        return False
+    elif requires == 'alpha' and has == 'beta':
+        return True
+    return False
+
+
+def format_name(name):
+    """ Format the name.
+
+    If the name consists of multiple words they will be capitalized and put
+    together without spaces.
+
+    """
+    if ' ' in name:
+        words = name.split(' ')
+        name = ''.join([w.capitalize() for w in words])
+    return name
+
+
+def remove_duplicate_plugins(plugins):
+    """ Returns a new list without duplicates. """
+    result = list()
+    for plugin in plugins:
+        for in_result in result:
+            if plugin['slug'] == in_result['slug']:
+                break
+        else:
+            result.append(plugin)
+    return result

@@ -23,7 +23,6 @@ module in the backend package.
 """
 
 from urllib.error import URLError
-from mcman.status_handler import StatusHandler
 from mcman.backend import plugins as backend
 from mcman.backend import common as utils
 from mcman.frontend.common import Command
@@ -62,14 +61,19 @@ class PluginsCommand(Command):
                                             result['plugin_name']))
                    for result in backend.search(query, self.args.size)]
 
+        self.p_main('Results:')
+        self.p_blank()
+
+        if len(results) < 1:
+            self.p_sub('No results...')
+            self.p_blank()
+            return
+
         # Find lenght of longest slug + name
         max_len = max([len(p[1]) for p in results])
 
         # Create the format
         frmt = '{{:<{}}} - {{}}'.format(max_len)
-
-        self.p_main('Results:')
-        self.p_blank()
 
         for i in range(min(len(results), abs(self.args.size))):
             plugin = results[i]
@@ -138,27 +142,26 @@ class PluginsCommand(Command):
             self.p_sub('Found no plugins')
             return
 
-        self.p_main('Looking up plugins on BukGet')
-
-        new_versions = dict()
-        for yielded in backend.find_newest_versions(plugins, self.server):
-            if type(yielded) is tuple:
-                slug, version = yielded
-                new_versions[slug] = version
-            elif type(yielded) is str:
-                self.p_sub('Could not find {} on BukGet'.format(yielded))
-
         self.p_main('Installed plugins:')
         self.p_blank()
 
-        max_name_len = max([len('[{}]{}'.format(p[3], p[2])) for p in plugins])
-        max_ver_len = max([len(p[1]) for p in plugins])
+        max_name_len = max([len('[{}]{}'.format(p['installed_file'],
+                                                p['plugin_name']))
+                            for p in plugins])
+        max_ver_len = max([len(p['installed_version']) for p in plugins])
         frmt = '{{:<{}}} - {{:<{}}}'.format(max_name_len, max_ver_len)
 
-        for slug, version, name, jar in plugins:
+        for plugin in plugins:
+            jar = plugin['installed_file']
+            name = plugin['plugin_name']
+            version = plugin['installed_version']
+
             line = frmt.format('[{}]{}'.format(jar, name), version)
-            if slug in new_versions:
-                new_version = new_versions[slug]
+            newest_version = backend.select_newest_version(plugin,
+                                                           self.args.version)
+            if newest_version is not None and \
+                    newest_version['version'] > version:
+                new_version = newest_version['version']
                 line += '  -- Out of date, newest version: {}'.format(
                     new_version)
             self.p_sub(line)
@@ -167,59 +170,27 @@ class PluginsCommand(Command):
 
     def download(self):
         """ Download plugins. """
+        self.args.ignored = [e.lower() for e in self.args.ignored]
+
+        self.p_main('Finding installed plugins')
+        installed = backend.list_plugins()
+
         self.p_main('Finding plugins on BukGet')
+        plugins = backend.dependencies(self.args.server, self.args.plugins,
+                                       self.args.version)
 
-        status_handler = StatusHandler()
-        status_handler.register_handler(1, lambda arguments:
-                                        self.p_sub('Could not find {}'.format(
-                                            arguments[0])))
-        to_install, versions = backend.find_plugins(self.args.server,
-                                                    self.args.plugins,
-                                                    status_handler.get_hook())
-
-        self.p_main('Resolving dependencies')
-
-        status_handler = StatusHandler()
-        one_three = lambda arguments: \
-            self.p_sub('Could not find `{}`'.format(arguments))
-        two = lambda arguments: \
-            self.p_sub('Could not find version `{}` of `{}`'.format(
-                arguments[0], arguments[1]))
-        status_handler.register_handler(1, one_three)
-        status_handler.register_handler(2, two)
-        status_handler.register_handler(3, one_three)
-        to_install = backend.dependencies(self.args.server, to_install,
-                                          versions, status_handler.get_hook())
-
-        if len(to_install) < 1:
-            self.p_main('Found no plugins!')
-            return
-
-        self.p_main(
-            'Resolving versions, and checking allready installed plugins')
-
-        status_handler = StatusHandler()
-        one = lambda argument: \
-            self.p_sub('Could not find plugin `{}` again'.format(argument))
-        two = lambda argument: \
-            self.p_sub('Could not find version of `{}` again'.format(
-                argument))
-        three = lambda argument: \
-            self.p_sub('{} was allready installed.'.format(
-                argument))
-        four = lambda argument: \
-            self.p_sub('{} is allready installed, but out of date'.format(
-                argument))
-        five = lambda argument: \
-            self.p_sub('{} is ignored.'.format(argument))
-        status_handler.register_handler(1, one)
-        status_handler.register_handler(2, two)
-        status_handler.register_handler(3, three)
-        status_handler.register_handler(4, four)
-        status_handler.register_handler(5, five)
-
-        plugins = backend.find_updates(self.server, to_install, versions,
-                                       status_handler.get_hook(), ignored=self.args.ignored)
+        to_install = list()
+        for plugin in plugins:
+            if plugin['plugin_name'].lower() in self.args.ignored:
+                continue
+            for i_plugin in installed:
+                if i_plugin['slug'] == plugin['slug'] \
+                        and not i_plugin['versions'][0]['version'] > \
+                        plugin['versions'][0]['version']:
+                    break
+            else:
+                to_install.append(plugin)
+        plugins = to_install
 
         if len(plugins) < 1:
             self.p_main('No plugins left to install')
@@ -245,33 +216,25 @@ class PluginsCommand(Command):
         self.p_main('Finding installed plugins')
 
         installed = backend.list_plugins()
-        jars = dict()
-        for i in installed:
-            jars[i[0]] = i[3]
 
         self.p_main('Looking up versions on BukGet')
 
         to_update = list()
         for i in installed:
-            plugin, i_version, name = i[0], i[1], i[2]
-            if plugin in self.args.ignored or name in self.args.ignored:
-                self.p_sub('Ignoring {}'.format(name))
+            n_version = backend.select_newest_version(i, self.args.version)
+            if n_version is None:
                 continue
-            u_plugin = backend.download_details(self.server, plugin,
-                                                self.args.version)
-            if u_plugin is None or len(u_plugin['versions']) < 1:
-                self.p_sub('Could not find {} on BukGet!'.format(name))
-                continue
-
-            u_version = u_plugin['versions'][0]['version']
-            if u_version > i_version:
-                to_update.append(u_plugin)
+            i_version = backend.select_installed_version(i)
+            if n_version['version'] > i_version['version']:
+                to_update.append(i)
 
         self.p_main('Plugins to update:')
         self.p_blank()
 
         if len(to_update) < 1:
             self.p_sub('All plugins are up to date!')
+            self.p_sub(('Maybe you want a pre-release? Try passing --beta, '
+                        '--alpha or even --latest as command options'))
             self.p_blank()
             return
 
@@ -285,7 +248,7 @@ class PluginsCommand(Command):
                 len(str(len(to_update))))
             for i in range(len(to_update)):
                 plugin = to_update[i]
-                os.remove(jars[plugin['slug']])
+                os.remove(plugin['installed_file'])
                 prefix = prefix_format.format(total=len(to_update), part=i+1)
                 backend.download_plugin(plugin, prefix)
             self.p_blank()
