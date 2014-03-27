@@ -115,7 +115,7 @@ def info(server, name):
     return plugin
 
 
-def dependencies(server, plugins, v_type='Latest'):
+def dependencies(server, plugins, v_type='Latest', deps=True):
     """ Resolve dependencies.
 
     This function will return a list of plugin dictionaries of all plugins
@@ -159,7 +159,10 @@ def dependencies(server, plugins, v_type='Latest'):
 
         plugin['versions'] = version_list
 
-    return _dependencies(server, plugins, v_type=v_type)
+    if deps:
+        return _dependencies(server, plugins, v_type=v_type)
+    else:
+        return plugins
 
 
 def _dependencies(server, plugins, stack=None, v_type='Latest'):
