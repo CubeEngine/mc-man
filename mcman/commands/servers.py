@@ -18,8 +18,8 @@
 
 from urllib.error import URLError
 
-from mcman.backend import servers as backend
-from mcman.backend import common as utils
+from mcman.logic import servers as backend
+from mcman.logic import common as utils
 from mcman.command import Command
 
 

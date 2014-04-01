@@ -25,9 +25,9 @@ module in the backend package.
 import os
 from urllib.error import URLError
 
-from mcman.backend.plugins import plugins as backend
-from mcman.backend.plugins import utils
-from mcman.backend import common
+from mcman.logic.plugins import plugins as backend
+from mcman.logic.plugins import utils
+from mcman.logic import common
 from mcman.command import Command
 
 

@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """ Tests for mcman.backend.plugins. """
-from mcman.backend import plugins
+from mcman.logic.plugins import plugins, utils
 from unittest.mock import patch
 from unittest import TestCase
 
 
-@patch('mcman.backend.plugins.bukget')
+@patch('mcman.logic.plugins.plugins.bukget')
 def test_init(fake_bukget):
     plugins.init('BasE', 'UseragenT')
     assert fake_bukget.BASE == 'BasE'

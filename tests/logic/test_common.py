@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """ Tests for mcman.backend.common. """
-from mcman.backend import common
+from mcman.logic import common
 from unittest.mock import MagicMock, patch
 from unittest import TestCase
 from zipfile import ZipFile
@@ -104,13 +104,13 @@ class TestDownload(TestCase):
         self.checksum = 'HerpDerpFooBarBaz'
         self.display_name = 'Displayed'
 
-        @patch('mcman.backend.common.checksum_file', self.fake_checksum_file)
-        @patch('mcman.backend.common.create_progress_bar',
+        @patch('mcman.logic.common.checksum_file', self.fake_checksum_file)
+        @patch('mcman.logic.common.create_progress_bar',
                self.fake_create_progressbar)
-        @patch('mcman.backend.common.get_term_width',
+        @patch('mcman.logic.common.get_term_width',
                MagicMock(return_value=80))
         @patch('builtins.print', self.fake_print)
-        @patch('mcman.backend.common.urlretrieve', self.fake_urlretrieve)
+        @patch('mcman.logic.common.urlretrieve', self.fake_urlretrieve)
         @patch('os.remove', self.fake_remove)
         def test(checksum, destination=self.filename, prefix=self.prefix,
                  display_name=self.display_name):

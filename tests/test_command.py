@@ -17,7 +17,7 @@
 """ Tests for frontend.common.py. """
 from unittest import TestCase
 from unittest.mock import MagicMock
-from mcman.frontend import common
+from mcman import command
 
 
 class TestCommand(TestCase):
@@ -25,7 +25,7 @@ class TestCommand(TestCase):
     """ Tests for mcman.frontend.common.Command. """
 
     def setUp(self):
-        self.command = common.Command(printer=self.printer)
+        self.command = command.Command(printer=self.printer)
         self.line = None
 
     def printer(self, *value, sep=' ', end='\n'):
@@ -70,7 +70,7 @@ class TestCommand(TestCase):
         exist. """
         try:
             self.command.invoke_subcommand('not_found', True)
-        except common.UknownSubcommandException:
+        except command.UknownSubcommandException:
             assert True
         else:
             assert False
