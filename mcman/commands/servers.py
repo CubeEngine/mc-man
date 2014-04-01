@@ -17,9 +17,10 @@
 """ The server command of mcman. """
 
 from urllib.error import URLError
+
 from mcman.backend import servers as backend
 from mcman.backend import common as utils
-from mcman.frontend.common import Command
+from mcman.command import Command
 
 
 class ServersCommand(Command):

@@ -181,6 +181,7 @@ def find_newest(server, channel):
     """ Find the newest version and build in a channel.
 
     Returns a tuple with the version name and build number.
+
     """
     channel_id = spacegdn.get_id(jar=server, channel=channel)
     result = spacegdn.builds(channel=channel_id)

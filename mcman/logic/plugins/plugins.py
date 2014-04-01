@@ -14,16 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-""" The backend for the mcman command. """
+""" The backend for the mcman plugins command. """
 
 import os
 import threading
-import bukget
-import yaml
 from queue import Queue
 from zipfile import ZipFile
-from mcman.backend.common import type_fits, format_name, find_plugins_folder
-from mcman.backend import common as utils
+
+import bukget
+import yaml
+
+from mcman.logic import common
+from mcman.logic.plugins import utils
 
 
 def init(base, user_agent):
@@ -72,13 +74,13 @@ def search(query, size):
         fields='slug,plugin_name,description,popularity.monthly',
         size=abs(size))
 
-    search_results = remove_duplicate_plugins(search_results)
+    search_results = utils.remove_duplicate_plugins(search_results)
 
     # Calculate scores
     results = list()
     for plugin in search_results:
         score = plugin['popularity']['monthly']
-        distance = utils.levenshtein(
+        distance = common.levenshtein(
             query, plugin['plugin_name'])
         score -= distance
 
@@ -130,7 +132,7 @@ def dependencies(server, plugins, v_type='Latest', deps=True):
     if type(plugins) is not list:
         plugins = [plugins]
 
-    plugins, versions = extract_name_version(plugins)
+    plugins, versions = utils.extract_name_version(plugins)
 
     plugins = bukget.search(
         {
@@ -171,7 +173,7 @@ def _dependencies(server, plugins, stack=None, v_type='Latest'):
     v_type = v_type.capitalize()
 
     # Resolve all the dependencies of the plugins
-    deps = extract_dependencies(plugins, v_type)
+    deps = utils.extract_dependencies(plugins, v_type)
 
     # Filter out dependencies allready in the stack and
     # add all dependencies to the stack
@@ -218,7 +220,7 @@ def download(question, frmt, plugins, skip=False):
         skip        Whether to skip the confirmation.
 
     """
-    if utils.ask(question, skip=skip):
+    if common.ask(question, skip=skip):
         for i in range(len(plugins)):
             plugin = plugins[i]
             prefix = frmt.format(total=len(plugins), part=i+1)
@@ -236,17 +238,17 @@ def download_plugin(plugin, prefix=''):
         ( 5/20)
 
     """
-    target_folder = find_plugins_folder() + '/'
+    target_folder = common.find_plugins_folder() + '/'
 
     url = plugin['versions'][0]['download']
-    filename = format_name(plugin['plugin_name'])
+    filename = common.format_name(plugin['plugin_name'])
     md5 = plugin['versions'][0]['md5']
     suffix = plugin['versions'][0]['filename'].split('.')[-1]
 
     full_name = target_folder + filename + '.' + suffix
 
-    utils.download(url, destination=full_name,
-                   checksum=md5, prefix=prefix, display_name=filename)
+    common.download(url, destination=full_name,
+                    checksum=md5, prefix=prefix, display_name=filename)
 
     if suffix == 'zip':
         print(' '*len(prefix) + 'Unzipping...', end=' ')
@@ -279,7 +281,7 @@ def unzip_plugin(target_file, target_folder):
             else:
                 destination += jar
 
-            utils.extract_file(zipped, jar, destination)
+            common.extract_file(zipped, jar, destination)
 
 
 def parse_installed_plugins_worker(jar_queue, result_queue):
@@ -293,7 +295,7 @@ def parse_installed_plugins_worker(jar_queue, result_queue):
     while not jar_queue.empty():
         jar = jar_queue.get()
 
-        checksum = utils.checksum_file(jar)
+        checksum = common.checksum_file(jar)
 
         with ZipFile(jar, 'r') as zipped:
             if not 'plugin.yml' in zipped.namelist():
@@ -318,7 +320,7 @@ def parse_installed_plugins(workers=4):
     These tuples are put in a set.
 
     """
-    folder = find_plugins_folder() + '/'
+    folder = common.find_plugins_folder() + '/'
     jars = [folder + f for f in os.listdir(folder)
             if os.path.isfile(folder + f) and f.endswith('.jar')]
 
@@ -384,7 +386,7 @@ def list_plugins(workers=4):
         },
         fields=fields)
 
-    results = remove_duplicate_plugins(results)
+    results = utils.remove_duplicate_plugins(results)
 
     for plugin in results:
         i_plugin = None
@@ -398,79 +400,3 @@ def list_plugins(workers=4):
             plugins.remove(i_plugin)
 
     return results
-
-
-def select_newest_version(plugin, v_type="Release"):
-    """ Return the newest version in plugin which is compatible `v_type`. """
-    for version in plugin['versions']:
-        if type_fits(version['type'], v_type):
-            return version
-
-
-def select_installed_version(plugin):
-    """ Return the installed version of the `plugin`.
-
-    This function raises an AssertionError if the plugin is not installed.
-    Eg. 'installed_version' is not in `plugin`.
-
-    """
-    assert 'installed_version' in plugin
-    installed = plugin['installed_version']
-    for version in plugin['versions']:
-        if version['version'] == installed:
-            return version
-
-
-def remove_duplicate_plugins(plugins, field='slug'):
-    """ Return a new list without duplicates.
-
-    The `field` argument specifies what field to use as the unique.
-
-    """
-    result = list()
-    for plugin in plugins:
-        for in_result in result:
-            if plugin[field] == in_result[field]:
-                break
-        else:
-            result.append(plugin)
-    return result
-
-
-def extract_name_version(names):
-    """ Extract names and versions for a list of names.
-
-    A tuple of a list with the names and a dict which maps from name in lower
-    to version.
-
-    """
-    versions = dict()
-    results = list()
-
-    for name in names:
-        if '#' in name:
-            name, version = name.split('#')
-            versions[name.lower()] = version
-        results.append(name)
-
-    return results
-
-
-def extract_dependencies(plugins, v_type='Release'):
-    """ Extract dependencies from the plugin.
-
-    The `v_type` says what kind of version we want.
-
-    """
-    if not type(plugins) is list:
-        plugins = [plugins]
-
-    deps = list()
-
-    for plugin in plugins:
-        for version in plugin['versions']:
-            if type_fits(version['type'], v_type):
-                deps.extend(version['hard_dependencies'])
-                break
-
-    return deps

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-""" Common things for plugins_command and servers_command.
+""" Command module.
 
 This module contains the classes 'UknownSubcommandException' and 'Command'.
 

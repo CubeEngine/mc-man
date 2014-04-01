@@ -22,11 +22,13 @@ module in the backend package.
 
 """
 
-from urllib.error import URLError
-from mcman.backend import plugins as backend
-from mcman.backend import common as utils
-from mcman.frontend.common import Command
 import os
+from urllib.error import URLError
+
+from mcman.backend.plugins import plugins as backend
+from mcman.backend.plugins import utils
+from mcman.backend import common
+from mcman.command import Command
 
 
 class PluginsCommand(Command):
@@ -98,8 +100,8 @@ class PluginsCommand(Command):
         website = plugin['website']
         if len(website) == 0:
             website = plugin['dbo_page']
-        authors = utils.list_names(plugin['authors'])
-        categories = utils.list_names(plugin['categories'])
+        authors = common.list_names(plugin['authors'])
+        categories = common.list_names(plugin['categories'])
         stage = plugin['stage']
         name = plugin['plugin_name']
         desciption = plugin['description'].strip()
@@ -127,7 +129,7 @@ class PluginsCommand(Command):
 
         for version in versions:
             line = frmt.format(version['version'],
-                               utils.list_names(version['game_versions']))
+                               common.list_names(version['game_versions']))
             self.p_sub(line)
 
         self.p_blank()
@@ -157,7 +159,7 @@ class PluginsCommand(Command):
             version = plugin['installed_version']
 
             line = frmt.format('[{}]{}'.format(jar, name), version)
-            newest_version = backend.select_newest_version(plugin,
+            newest_version = utils.select_newest_version(plugin,
                                                            self.args.version)
             if newest_version is not None and \
                     newest_version['version'] > version:
@@ -199,9 +201,9 @@ class PluginsCommand(Command):
 
         self.p_main('Plugins to install:')
         self.p_blank()
-        self.p_sub(utils.list_names([p['plugin_name'] + '#'
-                                    + p['versions'][0]['version']
-                                    for p in plugins]))
+        self.p_sub(common.list_names([p['plugin_name'] + '#'
+                                     + p['versions'][0]['version']
+                                     for p in plugins]))
         self.p_blank()
 
         backend.download('Continue to download?',
@@ -222,10 +224,10 @@ class PluginsCommand(Command):
 
         to_update = list()
         for i in installed:
-            n_version = backend.select_newest_version(i, self.args.version)
+            n_version = utils.select_newest_version(i, self.args.version)
             if n_version is None:
                 continue
-            i_version = backend.select_installed_version(i)
+            i_version = utils.select_installed_version(i)
             if n_version['version'] > i_version['version']:
                 to_update.append(i)
 
@@ -239,12 +241,12 @@ class PluginsCommand(Command):
             self.p_blank()
             return
 
-        self.p_sub(utils.list_names([p['plugin_name'] + '#'
-                                     + p['versions'][0]['version']
-                                     for p in to_update]))
+        self.p_sub(common.list_names([p['plugin_name'] + '#'
+                                      + p['versions'][0]['version']
+                                      for p in to_update]))
         self.p_blank()
 
-        if utils.ask('Continue to update?', skip=self.args.no_confirm):
+        if common.ask('Continue to update?', skip=self.args.no_confirm):
             prefix_format = '({{part:>{}}}/{{total}}) '.format(
                 len(str(len(to_update))))
             for i in range(len(to_update)):

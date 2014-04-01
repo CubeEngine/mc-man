@@ -16,12 +16,11 @@
 
 """ mcman main module. """
 
-# Imports from the python library:
 import argparse
+
 import mcman
-# Imports from mcman:
-from mcman.frontend.plugins_command import PluginsCommand
-from mcman.frontend.servers_command import ServersCommand
+from mcman.commands.plugins import PluginsCommand
+from mcman.commands.servers import ServersCommand
 
 
 def negative(argument):
