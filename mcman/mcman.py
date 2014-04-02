@@ -17,15 +17,58 @@
 """ mcman main module. """
 
 import argparse
+import sys
 
 import mcman
 from mcman.commands.plugins import PluginsCommand
 from mcman.commands.servers import ServersCommand
+from mcman.commands.import_cmd import ImportCommand
+from mcman.commands.export import ExportCommand
 
 
 def negative(argument):
     """ Turn a number negative. """
     return -abs(int(argument))
+
+
+def setup_import_command(sub_parsers, parent):
+    """ Setup the command for import. """
+    # The server command parser
+    parser = sub_parsers.add_parser(
+        'import', aliases=['i'],
+        help='Import a server',
+        description='Import a server - Its server jars and plugins',
+        parents=[parent])
+    parser.set_defaults(command=ImportCommand)
+
+    parser.add_argument(
+        'input', type=argparse.FileType('r', 0), default=sys.stdin,
+        help=('The json file contating the server and plugin information. '
+              '"-" may be used to mark stdin.'))
+
+    return parser
+
+
+def setup_export_command(sub_parsers, parent):
+    """ Setup the command for export. """
+    # The server command parser
+    parser = sub_parsers.add_parser(
+        'export', aliases=['e'],
+        help='Export the server',
+        description='Export the server - Its server jars and plugins',
+        parents=[parent])
+    parser.set_defaults(command=ExportCommand)
+
+    parser.add_argument(
+        'output', type=argparse.FileType('w'),
+        default=sys.stdout,
+        help='The file to output the json to. "-" may be used to mark stdout.')
+
+    parser.add_argument(
+        '--types', default='plugins,servers',
+        help='What to save. A comma separated list of "servers" and "plugins"')
+
+    return parser
 
 
 def setup_server_commands(sub_parsers, parent):
@@ -274,6 +317,9 @@ def setup_parse_command():
     server_parser = setup_server_commands(sub_parsers, parent)
     plugin_parser = setup_plugin_commands(sub_parsers, parent)
 
+    setup_import_command(sub_parsers, parent)
+    setup_export_command(sub_parsers, parent)
+
     return server_parser, plugin_parser, parser
 
 
@@ -287,7 +333,8 @@ def main():
         print('Version: {}'.format(mcman.__version__))
     elif not 'command' in args:
         parser.print_help()
-    elif not 'subcommand' in args:
+    elif 'subcommand' not in args and not (args.command == ExportCommand
+                                           or args.command == ImportCommand):
         if args.command is PluginsCommand:
             plugin_parser.print_help()
         elif args.command is ServersCommand:

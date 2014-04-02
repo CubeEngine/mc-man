@@ -362,7 +362,7 @@ def list_plugins(workers=4):
     """
     fields = ('slug,plugin_name,versions.hard_dependencies,versions.type,'
               'versions.version,versions.download,versions.filename,'
-              'versions.md5')
+              'versions.md5,versions.slug')
 
     plugins = parse_installed_plugins(workers)
 

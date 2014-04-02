@@ -15,7 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """ The backend for the mcman servers command. """
+
+import os
+
 import spacegdn
+
+from mcman.logic import common
 
 
 def init(base, user_agent):
@@ -189,3 +194,22 @@ def find_newest(server, channel):
     channel, version, build = find_latest_build(result)
 
     return version, build['build']
+
+
+def list_servers():
+    """ List servers in the current dir.
+
+    Returned is a dictionary from jar file(relative path) to id
+
+    """
+    files = dict()
+
+    for file in os.listdir():
+        if not file.endswith('.jar'):
+            continue
+        checksum = common.checksum_file(file)
+        build = build_by_checksum(checksum)
+        if build is not None:
+            files[file] = build['id']
+
+    return files
