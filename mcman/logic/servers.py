@@ -213,3 +213,13 @@ def list_servers():
             files[file] = build['id']
 
     return files
+
+
+def find_servers(servers):
+    """ Get builds by ids. """
+    builds = list()
+    for build in servers:
+        results = spacegdn.builds(build=build)
+        if len(results) > 0:
+            builds.append(results[0])
+    return builds

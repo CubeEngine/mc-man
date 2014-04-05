@@ -34,6 +34,9 @@ class ImportCommand(Command):
 
     """ The import command of mcman. """
 
+    # TODO - Handle zipped plugins
+    # TODO - Handle folders not created
+
     def __init__(self, args):
         """ Parse command and execute tasks. """
         Command.__init__(self)
@@ -43,4 +46,45 @@ class ImportCommand(Command):
 
     def run(self):
         """ Run the command. """
+        self.p_main('Parsing file and finding plugins and servers')
         document = json.loads('\n'.join(self.args.input))
+
+        plugins = document['plugins']
+        plugins2 = p_backend.find_versions([(e['slug'], e['version-slug'])
+                                           for e in plugins])
+
+        servers = document['servers']
+        servers2 = s_backend.find_servers([e['id'] for e in servers])
+
+        to_download = list()
+        for plugin in plugins:
+            r_plugin = None
+            for _plugin in plugins2:
+                if _plugin['slug'] == plugin['slug']:
+                    r_plugin = _plugin
+                    break
+            else:
+                continue
+
+            version = r_plugin['versions'][0]
+            to_download.append((plugin['file'], version['download'],
+                                version['md5']))
+        for server in servers:
+            r_server = None
+            for _server in servers2:
+                if _server['id'] == server['id']:
+                    r_server = _server
+                    break
+            else:
+                continue
+
+            to_download.append((server['file'], r_server['url'],
+                                r_server['checksum']))
+
+        self.p_main('Downloading servers and plugins')
+        prefix = '({{part:>{}}}/{}) '.format(
+            len(str(len(to_download))), len(to_download))
+        for i in range(len(to_download)):
+            jar = to_download[i]
+            common.download(jar[1], destination=jar[0], checksum=jar[2],
+                            prefix=prefix.format(part=i+1))

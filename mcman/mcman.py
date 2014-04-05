@@ -42,7 +42,7 @@ def setup_import_command(sub_parsers, parent):
     parser.set_defaults(command=ImportCommand)
 
     parser.add_argument(
-        'input', type=argparse.FileType('r', 0), default=sys.stdin,
+        'input', type=argparse.FileType('r'), default=sys.stdin,
         help=('The json file contating the server and plugin information. '
               '"-" may be used to mark stdin.'))
 

@@ -400,3 +400,46 @@ def list_plugins(workers=4):
             plugins.remove(i_plugin)
 
     return results
+
+
+def find_versions(plugins):
+    """ Get plugin dictionaries from BukGet only with the version.
+
+    This function takes a list of tuples containing plugin slugs in the first
+    slot and version slugs in the second slot. Returned is a list of plugin
+    dictionaries. Plugins which are not found, are just ignored.
+
+    """
+    fields = ('versions.slug,versions.md5,versions.download,versions.filename,'
+              'plugin_name,slug')
+
+    results = bukget.search(
+        {
+            'field': 'slug',
+            'action': 'in',
+            'value': [plugin[0] for plugin in plugins]
+        },
+        fields=fields)
+
+    final = list()
+    for plugin in results:
+        target_version = None
+        for e in plugins:
+            if e[0] == plugin['slug']:
+                target_version = e[1]
+                break
+        else:
+            continue
+
+        version = None
+        for v in plugin['versions']:
+            if v['slug'] == target_version:
+                version = v
+                break
+        else:
+            continue
+
+        plugin['versions'] = [version]
+        final.append(plugin)
+
+    return final
