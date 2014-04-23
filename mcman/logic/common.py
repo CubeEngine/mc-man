@@ -119,9 +119,7 @@ def download(url, destination=None, checksum=None, prefix='',
 
     # Create the folders if they don't exist
     if '/' in destination:
-        folder = '/'.join(destination.split('/')[:-1]) + '/'
-        if not os.path.isdir(folder):
-            os.makedirs(folder)
+        makedirs(destination)
 
     term_width = get_term_width()
     pprefix = prefix + display_name
@@ -133,12 +131,18 @@ def download(url, destination=None, checksum=None, prefix='',
         actual_checksum = checksum_file(destination)
         if actual_checksum == checksum:
             print('Success')
-            return True
         else:
             os.remove(destination)
             print('The checksums did not match! The file was deleted.')
             return False
     return True
+
+
+def makedirs(file):
+    """ Make the parent directories to a file. """
+    folder = '/'.join(file.split('/')[:-1]) + '/'
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
 
 
 def create_progress_bar(width, prefix=None):
