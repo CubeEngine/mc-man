@@ -298,7 +298,7 @@ def parse_installed_plugins_worker(jar_queue, result_queue):
         checksum = common.checksum_file(jar)
 
         with ZipFile(jar, 'r') as zipped:
-            if not 'plugin.yml' in zipped.namelist():
+            if 'plugin.yml' not in zipped.namelist():
                 continue
 
             yml = yaml.load(zipped.read('plugin.yml').decode())
@@ -424,17 +424,17 @@ def find_versions(plugins):
     final = list()
     for plugin in results:
         target_version = None
-        for e in plugins:
-            if e[0] == plugin['slug']:
-                target_version = e[1]
+        for slug, version in plugins:
+            if slug == plugin['slug']:
+                target_version = version
                 break
         else:
             continue
 
         version = None
-        for v in plugin['versions']:
-            if v['slug'] == target_version:
-                version = v
+        for vers in plugin['versions']:
+            if vers['slug'] == target_version:
+                version = vers
                 break
         else:
             continue

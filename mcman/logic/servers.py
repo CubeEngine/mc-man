@@ -217,9 +217,9 @@ def list_servers():
 
 def find_servers(servers):
     """ Get builds by ids. """
-    builds = list()
+    build_list = list()
     for build in servers:
         results = spacegdn.builds(build=build)
         if len(results) > 0:
-            builds.append(results[0])
-    return builds
+            build_list.append(results[0])
+    return build_list

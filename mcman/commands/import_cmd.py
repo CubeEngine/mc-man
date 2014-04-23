@@ -23,9 +23,9 @@ as little as possible logic should go here.
 
 import json
 
+import os
 import mcman.logic.servers as s_backend
 from mcman.logic.plugins import plugins as p_backend
-from mcman.logic.plugins import utils as p_utils
 from mcman.logic import common
 from mcman.command import Command
 
@@ -35,12 +35,13 @@ class ImportCommand(Command):
     """ The import command of mcman. """
 
     # TODO - Handle zipped plugins
-    # TODO - Handle folders not created
 
     def __init__(self, args):
         """ Parse command and execute tasks. """
         Command.__init__(self)
         self.args = args
+
+        self.to_download = list()
 
         self.run()
 
@@ -50,16 +51,40 @@ class ImportCommand(Command):
         document = json.loads('\n'.join(self.args.input))
 
         plugins = document['plugins']
-        plugins2 = p_backend.find_versions([(e['slug'], e['version-slug'])
-                                           for e in plugins])
+        remote_plugins = p_backend.find_versions(
+            [(e['slug'], e['version-slug'])
+             for e in plugins])
 
         servers = document['servers']
-        servers2 = s_backend.find_servers([e['id'] for e in servers])
+        remote_servers = s_backend.find_servers([e['id'] for e in servers])
 
-        to_download = list()
+        self.parse_plugins(plugins, remote_plugins)
+        self.parse_servers(servers, remote_servers)
+
+        self.p_main('Downloading servers and plugins')
+        prefix = '({{part:>{}}}/{}) '.format(
+            len(str(len(self.to_download))), len(self.to_download))
+        for i in range(len(self.to_download)):
+            jar = self.to_download[i]
+            this_prefix = prefix.format(part=i+1)
+            destination = jar[0]
+            if jar[1].endswith('.zip'):
+                destination = jar[1].split('/')[-1]
+            common.download(jar[1], destination=destination, checksum=jar[2],
+                            prefix=this_prefix)
+            if jar[1].endswith('.zip'):
+                print(' ' * len(this_prefix) + "Unzipping...", end=' ')
+                p_backend.unzip_plugin(destination,
+                                       '/'.join(jar[0].split('/')[:-1]) + '/')
+                os.remove(destination)
+                print('Success')
+
+
+    def parse_plugins(self, plugins, remote_plugins):
+        """ Populate the to_download list with plugins to download. """
         for plugin in plugins:
             r_plugin = None
-            for _plugin in plugins2:
+            for _plugin in remote_plugins:
                 if _plugin['slug'] == plugin['slug']:
                     r_plugin = _plugin
                     break
@@ -67,24 +92,19 @@ class ImportCommand(Command):
                 continue
 
             version = r_plugin['versions'][0]
-            to_download.append((plugin['file'], version['download'],
-                                version['md5']))
+            self.to_download.append((plugin['file'], version['download'],
+                                     version['md5']))
+
+    def parse_servers(self, servers, remote_servers):
+        """ Populate the to_download list with servers to download. """
         for server in servers:
             r_server = None
-            for _server in servers2:
+            for _server in remote_servers:
                 if _server['id'] == server['id']:
                     r_server = _server
                     break
             else:
                 continue
 
-            to_download.append((server['file'], r_server['url'],
-                                r_server['checksum']))
-
-        self.p_main('Downloading servers and plugins')
-        prefix = '({{part:>{}}}/{}) '.format(
-            len(str(len(to_download))), len(to_download))
-        for i in range(len(to_download)):
-            jar = to_download[i]
-            common.download(jar[1], destination=jar[0], checksum=jar[2],
-                            prefix=prefix.format(part=i+1))
+            self.to_download.append((server['file'], r_server['url'],
+                                     r_server['checksum']))

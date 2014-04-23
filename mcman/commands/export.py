@@ -64,9 +64,9 @@ class ExportCommand(Command):
         self.p_main('Writing file')
         document = dict()
         document['servers'] = list()
-        for file, id in servers.items():
+        for file, key in servers.items():
             server = dict()
-            server['id'] = id
+            server['id'] = key
             server['file'] = file
 
             document['servers'].append(server)

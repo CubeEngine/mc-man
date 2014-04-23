@@ -18,6 +18,7 @@
 import sys
 import hashlib
 import os
+import os.path
 import struct
 import termios
 import fcntl
@@ -107,11 +108,20 @@ def download(url, destination=None, checksum=None, prefix='',
         display_name    The name to display on the left side instead of the
                         destination. Defaults to None.
 
+    True is returned if the checksum succeeds or is not done, False only if it
+    fails.
+
     """
     if destination is None:
         destination = url.split('/')[-1]
     if display_name is None:
         display_name = destination
+
+    # Create the folders if they don't exist
+    if '/' in destination:
+        folder = '/'.join(destination.split('/')[:-1]) + '/'
+        if not os.path.isdir(folder):
+            os.makedirs(folder)
 
     term_width = get_term_width()
     pprefix = prefix + display_name
@@ -123,9 +133,12 @@ def download(url, destination=None, checksum=None, prefix='',
         actual_checksum = checksum_file(destination)
         if actual_checksum == checksum:
             print('Success')
+            return True
         else:
             os.remove(destination)
             print('The checksums did not match! The file was deleted.')
+            return False
+    return True
 
 
 def create_progress_bar(width, prefix=None):
