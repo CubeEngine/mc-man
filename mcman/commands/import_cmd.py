@@ -34,8 +34,6 @@ class ImportCommand(Command):
 
     """ The import command of mcman. """
 
-    # TODO - Handle zipped plugins
-
     def __init__(self, args):
         """ Parse command and execute tasks. """
         Command.__init__(self)
