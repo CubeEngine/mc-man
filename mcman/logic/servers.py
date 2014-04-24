@@ -56,6 +56,8 @@ def channels(server):
 
     """
     server = spacegdn.get_id(jar=server)
+    if server == -1:
+        raise ValueError('Could not find server')
     result = spacegdn.channels(jar=server)
 
     if type(result) is not list:
@@ -72,8 +74,12 @@ def versions(server, channel, size):
 
     """
     server = spacegdn.get_id(jar=server)
+    if server == -1:
+        raise ValueError('Could not find server')
     if channel is not None:
         channel = spacegdn.get_id(jar=server, channel=channel)
+        if channel == -1:
+            raise ValueError('Could not find channel')
     result = spacegdn.versions(jar=server, channel=channel)
 
     if type(result) is not list:
@@ -98,10 +104,16 @@ def builds(server, channel, version, size):
 
     """
     server = spacegdn.get_id(jar=server)
+    if server == -1:
+        raise ValueError('Could not find server')
     if channel is not None:
         channel = spacegdn.get_id(jar=server, channel=channel)
+        if channel == -1:
+            raise ValueError('Could not find channel')
     if version is not None:
         version = spacegdn.get_id(jar=server, channel=channel, version=version)
+        if version == -1:
+            raise ValueError('Could not find version')
     result = spacegdn.builds(jar=server, channel=channel, version=version)
 
     if type(result) is not list:
@@ -128,15 +140,23 @@ def get_builds(server, channel, version, build):
 
     """
     server = spacegdn.get_id(jar=server)
+    if server == -1:
+        raise ValueError('Could not find server')
     if channel is not None:
         channel = spacegdn.get_id(jar=server, channel=channel)
+        if channel == -1:
+            raise ValueError('Could not find channel')
     if version is not None:
         version = spacegdn.get_id(jar=server, channel=channel,
                                   version=version)
+        if version == -1:
+            raise ValueError('Could not find version')
     if build is not None:
         build = spacegdn.get_id(jar=server, channel=channel,
                                 version=version,
                                 build=build)
+        if build == -1:
+            raise ValueError('Could not find build')
 
     return spacegdn.builds(jar=server, channel=channel,
                            version=version, build=build)

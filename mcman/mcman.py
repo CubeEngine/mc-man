@@ -36,15 +36,15 @@ def setup_import_command(sub_parsers, parent):
     # The server command parser
     parser = sub_parsers.add_parser(
         'import', aliases=['i'],
-        help='Import a server',
+        help='import a server',
         description='Import a server - Its server jars and plugins',
         parents=[parent])
     parser.set_defaults(command=ImportCommand)
 
     parser.add_argument(
         'input', type=argparse.FileType('r'), default=sys.stdin,
-        help=('The json file contating the server and plugin information. '
-              '"-" may be used to mark stdin.'))
+        help=('the json file contating the server and plugin information. '
+              '"-" may be used to mark stdin'))
 
     return parser
 
@@ -54,7 +54,7 @@ def setup_export_command(sub_parsers, parent):
     # The server command parser
     parser = sub_parsers.add_parser(
         'export', aliases=['e'],
-        help='Export the server',
+        help='export the server',
         description='Export the server - Its server jars and plugins',
         parents=[parent])
     parser.set_defaults(command=ExportCommand)
@@ -62,11 +62,11 @@ def setup_export_command(sub_parsers, parent):
     parser.add_argument(
         'output', type=argparse.FileType('w'),
         default=sys.stdout,
-        help='The file to output the json to. "-" may be used to mark stdout.')
+        help='the file to output the json to. "-" may be used to mark stdout')
 
     parser.add_argument(
         '--types', default='plugins,servers',
-        help='What to save. A comma separated list of "servers" and "plugins"')
+        help='what to save. A comma separated list of "servers" and "plugins"')
 
     return parser
 
@@ -80,12 +80,12 @@ def setup_server_commands(sub_parsers, parent):
     sub_parent.add_argument(
         '--base-url', metavar='base-url',
         default='http://spacegdn.totokaka.io/v1/',
-        help='The base URL to use for SpaceGDN')
+        help='the base URL to use for SpaceGDN')
 
     # The server command parser
     parser = sub_parsers.add_parser(
         'server', aliases=['s'],
-        help='Manage server jars',
+        help='manage server jars',
         description='Download, identify and list Minecraft server jars.',
         parents=[sub_parent])
     parser.set_defaults(command=ServersCommand)
@@ -94,74 +94,74 @@ def setup_server_commands(sub_parsers, parent):
     # servers, sub command of server
     servers_parser = sub_parsers.add_parser(
         'servers', aliases=['s'],
-        help='List available servers.',
+        help='list available servers',
         description='List all server jars available for download.',
         parents=[sub_parent])
     servers_parser.set_defaults(subcommand='servers')
     # channels, sub command of server
     channels_parser = sub_parsers.add_parser(
         'channels', aliases=['c'],
-        help='List channels for the specified server.',
+        help='list channels for the specified server',
         description='List all available channels for the server specified.',
         parents=[sub_parent])
     channels_parser.set_defaults(subcommand='channels')
     channels_parser.add_argument(
-        'server', help='The server to get channels for.')
+        'server', help='the server to get channels for')
     # versions, sub command of server
     versions_parser = sub_parsers.add_parser(
         'versions', aliases=['v'],
-        help='List versions for the specified server.',
+        help='list versions for the specified server',
         description='List all available versions for the server specified, '
                     + 'or only the versions in the specified channel.',
         parents=[sub_parent])
     versions_parser.set_defaults(subcommand='versions')
     versions_parser.add_argument(
-        'server', help='The server to get versions for.')
+        'server', help='the server to get versions for')
     versions_parser.add_argument(
-        'channel', nargs='?', help='The channel to get versions for.')
+        'channel', nargs='?', help='the channel to get versions for')
     # builds, sub command of server
     builds_parser = sub_parsers.add_parser(
         'builds', aliases=['b'],
-        help='List builds for the specified server.',
+        help='list builds for the specified server',
         description='List all available builds for the server specified, '
                     + 'or only the ones in the specified channel, or version',
         parents=[sub_parent])
     builds_parser.set_defaults(subcommand='builds')
     builds_parser.add_argument(
-        'server', help='The server to get builds for.')
+        'server', help='the server to get builds for')
     builds_parser.add_argument(
-        'channel', nargs='?', help='The channel to get builds for.')
+        'channel', nargs='?', help='the channel to get builds for')
     builds_parser.add_argument(
-        'version', nargs='?', help='The version to get builds for.')
+        'version', nargs='?', help='the version to get builds for')
     # download, sub command of server
     download_parser = sub_parsers.add_parser(
         'download', aliases=['d'],
-        help='Download the newest version of the server.',
+        help='download the newest version of the server',
         description='Download the newest, the newest in the channel, or the '
                     + 'specified version of the jar.',
         parents=[sub_parent])
     download_parser.set_defaults(subcommand='download')
     download_parser.add_argument(
-        'server', help='The server to download.')
+        'server', help='the server to download')
     download_parser.add_argument(
-        'channel', nargs='?', help='The channel to dowload from.')
+        'channel', nargs='?', help='the channel to dowload from')
     download_parser.add_argument(
-        'version', nargs='?', help='The specific version to download.')
+        'version', nargs='?', help='the specific version to download')
     download_parser.add_argument(
-        'build', nargs='?', help='The specific build to download')
+        'build', nargs='?', help='the specific build to download')
     download_parser.add_argument(
-        '-o', '--output', help='Filename to download to')
+        '-o', '--output', help='filename to download to')
     # identify, sub command of server
     identify_parser = sub_parsers.add_parser(
         'identify', aliases=['i'],
-        help='Identify the server and version of the jar file.',
+        help='identify the server and version of the jar file',
         description='Identifies the server, version and possibly channel of '
                     + 'the jar file specified.',
         parents=[sub_parent])
     identify_parser.set_defaults(subcommand='identify')
     identify_parser.add_argument(
         'jar', type=argparse.FileType('rb', 0),
-        help='The jar file to identify.')
+        help='the jar file to identify')
 
     return parser
 
@@ -174,32 +174,32 @@ def setup_plugin_commands(sub_parsers, parent):
     # Base URL
     sub_parent.add_argument(
         '--base-url', default='http://api.bukget.org/3/',
-        help='The base URL to use for BukGet')
+        help='the base URL to use for BukGet')
     sub_parent.add_argument(
         '--server', default='bukkit',
-        help='The server to get plugins for. This is sent to BukGet, '
+        help='the server to get plugins for. This is sent to BukGet, '
              + 'and will affect what plugins you can download')
     sub_parent.add_argument(
         '--beta', action='store_const', dest='version', const='beta',
-        help="Find latest beta version, instead of latest release for "
+        help="find latest beta version, instead of latest release for "
              + "plugins where a version isn't specified.")
     sub_parent.add_argument(
         '--alpha', action='store_const', dest='version', const='alpha',
-        help="Find latest alpha version, instead of latest release for "
+        help="find latest alpha version, instead of latest release for "
              + "plugins where a version isn't specified.")
     sub_parent.add_argument(
         '--latest', action='store_const', dest='version', const='latest',
-        help="Find latest version, no matter type, instead of latest release "
+        help="find latest version, no matter type, instead of latest release "
              + "for plugins where a version isn't specified.")
     sub_parent.add_argument(
         '--no-resolve-dependencies', action='store_false',
-        dest='resolve_dependencies', help='Do not resolve dependencies.')
+        dest='resolve_dependencies', help='do not resolve dependencies')
     sub_parent.set_defaults(version='release')
 
     # The plugin command parser
     parser = sub_parsers.add_parser(
         'plugin', aliases=['p'],
-        help='Manage plugins',
+        help='manage plugins',
         description='Find, download and update plugins.',
         parents=[sub_parent])
     parser.set_defaults(command=PluginsCommand)
@@ -209,53 +209,53 @@ def setup_plugin_commands(sub_parsers, parent):
     # search, sub command of plugin
     search_parser = sub_parsers.add_parser(
         'search', aliases=['s'],
-        help='Search for a plugin',
+        help='search for a plugin',
         description='Search for a plugin using partial matching of the name.',
         parents=[sub_parent])
     search_parser.set_defaults(subcommand='search')
     search_parser.add_argument(
-        'query', help='Search query.')
+        'query', help='search query')
     # info, sub command of plugin
     info_parser = sub_parsers.add_parser(
         'info', aliases=['i'],
-        help='Get info about a plugin(s)',
+        help='get info about a plugin(s)',
         description='Get info about one, or more plugins.',
         parents=[sub_parent])
     info_parser.set_defaults(subcommand='info')
     info_parser.add_argument(
         'plugins', metavar='plugin', type=str,
-        help='Plugin(s) to get info for.')
+        help='plugin(s) to get info for')
     # download, sub command of plugin
     download_parser = sub_parsers.add_parser(
         'download', aliases=['d'],
-        help='Download a plugin(s)',
+        help='download a plugin(s)',
         description='Download the specified plugin(s). A version can be '
                     + 'specified by appending "#<version>" to the plugin name',
         parents=[sub_parent])
     download_parser.set_defaults(subcommand='download')
     download_parser.add_argument(
         'plugins', metavar='plugin', type=str, nargs='+',
-        help='Plugin(s) to download, and extract if they are zipped.')
+        help='plugin(s) to download, and extract if they are zipped')
     download_parser.add_argument(
         '--ignore', metavar='plugin', type=str, nargs='+', dest='ignored',
-        help='Plugin(s) to ignore.')
+        help='plugin(s) to ignore')
     # update, sub command of plugin
     update_parser = sub_parsers.add_parser(
         'update', aliases=['u'],
-        help='Update a plugin(s)',
+        help='update a plugin(s)',
         description='Update the specified plugins, or all.',
         parents=[sub_parent])
     update_parser.set_defaults(subcommand='update')
     update_parser.add_argument(
         'plugins', metavar='plugin', type=str, nargs='*',
-        help='Plugin(s) update.')
+        help='plugin(s) update')
     update_parser.add_argument(
         '--ignore', metavar='plugin', type=str, nargs='+', dest='ignored',
-        help='Plugin(s) to ignore.')
+        help='plugin(s) to ignore')
     # list, sub command of plugin
     list_parser = sub_parsers.add_parser(
         'list', aliases=['l'],
-        help='List installed plugins',
+        help='list installed plugins',
         description='List installed plugins, their versions, and the newest '
                     + 'version.',
         parents=[sub_parent])
@@ -272,14 +272,14 @@ def setup_parse_command():
     # Commands that can be used for all sub commands
     parent.add_argument(
         '--version',
-        help='Show the version of mcman, then proceede normally',
+        help='show the version of mcman, then quit',
         action='store_true', dest='show_version')
     parent.add_argument(
         '--user-agent',
         metavar='agent',
         type=str,
         default='mcman ' + mcman.__version__,
-        help='Alternative user agent to report to BukGet and SpaceGDN')
+        help='alternative user agent to report to BukGet and SpaceGDN')
     # Head and tail, they are mutually exclusive
     group = parent.add_mutually_exclusive_group()
     group.add_argument(
@@ -290,7 +290,7 @@ def setup_parse_command():
         nargs='?',
         default=10,
         const=5,
-        help='How many entries that should be displayed, from the top')
+        help='how many entries that should be displayed, from the top')
     group.add_argument(
         '--tail',
         metavar='size',
@@ -299,11 +299,11 @@ def setup_parse_command():
         nargs='?',
         default=10,
         const=-5,
-        help='How many entries that should be displayed, from the bottom')
-    group.add_argument(
+        help='how many entries that should be displayed, from the bottom')
+    parent.add_argument(
         '--no-confirm',
         action='store_true',
-        help='Do not wait for confirmation, just proceede.')
+        help='do not wait for confirmation, just continue')
 
     # The top level command
     parser = argparse.ArgumentParser(
@@ -331,7 +331,7 @@ def main():
 
     if args.show_version:
         print('Version: {}'.format(mcman.__version__))
-    elif not 'command' in args:
+    elif 'command' not in args:
         parser.print_help()
     elif 'subcommand' not in args and not (args.command == ExportCommand
                                            or args.command == ImportCommand):

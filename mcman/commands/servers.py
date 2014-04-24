@@ -75,35 +75,45 @@ class ServersCommand(Command):
         """ List available channels for a server. """
         self.p_main('Fetching channel list from SpaceGDN')
 
-        channels = backend.channels(self.args.server)
+        try:
+            channels = backend.channels(self.args.server)
 
-        if type(channels) is not list:
-            self.error(channels)
-        else:
-            self.result('Available channels:', channels)
+            if type(channels) is not list:
+                self.error(channels)
+            else:
+                self.result('Available channels:', channels)
+        except ValueError as error:
+            self.p_sub(error.args[0])
 
     def versions(self):
         """ List available versions of a server. """
         self.p_main('Fetching version list from SpaceGDN')
 
-        versions = backend.versions(self.args.server, self.args.channel,
-                                    self.args.size)
+        try:
+            versions = backend.versions(self.args.server, self.args.channel,
+                                        self.args.size)
 
-        if type(versions) is not list:
-            self.error(versions)
-        else:
-            self.result('Available channels:', versions)
+            if type(versions) is not list:
+                self.error(versions)
+            else:
+                self.result('Available channels:', versions)
+        except ValueError as error:
+            self.p_sub(error.args[0])
 
     def builds(self):
         """ List available builds for a server. """
         self.p_main('Fetching build list from SpaceGDN')
 
-        builds = backend.builds(self.args.server, self.args.channel,
-                                self.args.version, self.args.size)
-        if type(builds) is not list:
-            self.error(builds)
-        else:
-            self.result('Available builds:', builds)
+        try:
+            builds = backend.builds(self.args.server, self.args.channel,
+                                    self.args.version, self.args.size)
+
+            if type(builds) is not list:
+                self.error(builds)
+            else:
+                self.result('Available builds:', builds)
+        except ValueError as error:
+            self.p_sub(error.args[0])
 
     def identify(self):
         """ Identify what server a jar file is. """
@@ -138,25 +148,28 @@ class ServersCommand(Command):
         """ Download a server. """
         self.p_main('Finding build on SpaceGDN')
 
-        result = backend.get_builds(self.args.server, self.args.channel,
-                                    self.args.version, self.args.build)
+        try:
+            result = backend.get_builds(self.args.server, self.args.channel,
+                                        self.args.version, self.args.build)
 
-        if type(result) is not list:
-            self.error(result)
-            return
+            if type(result) is not list:
+                self.error(result)
+                return
 
-        if len(result) < 1:
-            self.p_sub('Could not find any build')
-            return
+            if len(result) < 1:
+                self.p_sub('Could not find any build')
+                return
 
-        channel, version, build = backend.find_latest_build(result)
+            channel, version, build = backend.find_latest_build(result)
 
-        self.result('Found build:', '{} {} {} {}'.format(self.args.server,
-                                                         channel, version,
-                                                         build['build']))
+            self.result('Found build:', '{} {} {} {}'.format(self.args.server,
+                                                             channel, version,
+                                                             build['build']))
 
-        if utils.ask('Continue to download?', skip=self.args.no_confirm):
-            utils.download(build['url'], destination=self.args.output,
-                           checksum=build['checksum'], prefix=' '*4)
-            self.p_blank()
-            self.p_raw('Done!')
+            if utils.ask('Continue to download?', skip=self.args.no_confirm):
+                utils.download(build['url'], destination=self.args.output,
+                               checksum=build['checksum'], prefix=' '*4)
+                self.p_blank()
+                self.p_raw('Done!')
+        except ValueError as error:
+            self.p_sub(error.args[0])
