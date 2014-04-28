@@ -1,3 +1,4 @@
- - 'mcman plugin update' should support --ignore
  - 'mcman plugin info' should show what type each version is; A, B, R
  - Checking of installed plugins should not query bukget with empty values
+ - 'mcman plugin install' Will install a plugin two times if it's both specified to be installed, and is a dependency
+ - 'mcman plugin install' Need to fix its handling of uknown versions

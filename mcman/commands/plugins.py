@@ -216,6 +216,8 @@ class PluginsCommand(Command):
 
     def update(self):
         """ Update installed plugins. """
+        self.args.ignored = [e.lower() for e in self.args.ignored]
+
         self.p_main('Finding installed plugins')
 
         installed = backend.list_plugins()
@@ -224,6 +226,8 @@ class PluginsCommand(Command):
 
         to_update = list()
         for i in installed:
+            if i['plugin_name'].lower() in self.args.ignored:
+                continue
             n_version = utils.select_newest_version(i, self.args.version)
             if n_version is None:
                 continue
