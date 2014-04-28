@@ -115,6 +115,7 @@ class PluginsCommand(Command):
 
         self.p_blank()
         self.p_sub('Versions:')
+        self.p_sub('    R - Release, B - Beta, A - Alpha')
 
         versions = plugin['versions']
         # Sorting
@@ -125,10 +126,10 @@ class PluginsCommand(Command):
 
         # Formatting
         max_len = max([len(v['version']) for v in versions])
-        frmt = '    {{:>{}}} - {{}}'.format(max_len)
+        frmt = '({{:1}})    {{:>{}}} - {{}}'.format(max_len)
 
         for version in versions:
-            line = frmt.format(version['version'],
+            line = frmt.format(version['type'].upper()[0], version['version'],
                                common.list_names(version['game_versions']))
             self.p_sub(line)
 
