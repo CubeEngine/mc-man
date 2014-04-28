@@ -1,3 +1,2 @@
- - 'mcman plugin download' should also take plugin slugs. Example: mcman plugin download ZombieMinigame --no-resolve-dependencies
  - 'mcman plugin update' should support --ignore
  - 'mcman plugin info' should show what type each version is; A, B, R

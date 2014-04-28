@@ -134,13 +134,22 @@ def dependencies(server, plugins, v_type='Latest', deps=True):
 
     plugins, versions = utils.extract_name_version(plugins)
 
-    plugins = bukget.search(
+    results = bukget.search(
         {
             'field': 'plugin_name',
             'action': 'in',
             'value': plugins
         },
         fields=fields)
+    results += bukget.search(
+        {
+            'field': 'slug',
+            'action': 'in',
+            'value': plugins
+        },
+        fields=fields)
+    utils.remove_duplicate_plugins(results)
+    plugins = results
 
     for plugin in plugins:
         if not plugin['plugin_name'].lower() in versions:
