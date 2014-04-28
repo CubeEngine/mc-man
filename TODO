@@ -1,1 +1,2 @@
  - 'mcman plugin info' should show what type each version is; A, B, R
+ - Report why plugins are removed from install queue. Eg. report when they are ignored and removed because of nonexisting versions.
