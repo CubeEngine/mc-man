@@ -186,15 +186,22 @@ class PluginsCommand(Command):
         to_install = list()
         for plugin in plugins:
             if plugin['plugin_name'].lower() in self.args.ignored:
+                self.p_sub("Ignoring {}", plugin['plugin_name'])
+                continue
+            if len(plugin['versions']) < 1:
+                self.p_sub("Could not find any versions for {}",
+                           plugin['plugin_name'])
                 continue
             for i_plugin in installed:
                 if i_plugin['slug'] == plugin['slug'] \
                         and not i_plugin['versions'][0]['version'] > \
                         plugin['versions'][0]['version']:
+                    self.p_sub("{} is allready installed, and up to date",
+                               plugin['plugin_name'])
                     break
             else:
                 to_install.append(plugin)
-        plugins = [p for p in to_install if len(p['versions']) > 0]
+        plugins = to_install
 
         if len(plugins) < 1:
             self.p_main('No plugins left to install')
@@ -228,6 +235,8 @@ class PluginsCommand(Command):
         to_update = list()
         for i in installed:
             if i['plugin_name'].lower() in self.args.ignored:
+                self.p_sub('Ignoring {}',
+                           i['plugin_name'])
                 continue
             n_version = utils.select_newest_version(i, self.args.version)
             if n_version is None:
