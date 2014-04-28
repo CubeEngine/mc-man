@@ -160,7 +160,7 @@ class PluginsCommand(Command):
 
             line = frmt.format('[{}]{}'.format(jar, name), version)
             newest_version = utils.select_newest_version(plugin,
-                                                           self.args.version)
+                                                         self.args.version)
             if newest_version is not None and \
                     newest_version['version'] > version:
                 new_version = newest_version['version']
@@ -193,7 +193,7 @@ class PluginsCommand(Command):
                     break
             else:
                 to_install.append(plugin)
-        plugins = to_install
+        plugins = [p for p in to_install if len(p['versions']) > 0]
 
         if len(plugins) < 1:
             self.p_main('No plugins left to install')

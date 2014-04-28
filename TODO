@@ -1,2 +1,1 @@
  - 'mcman plugin info' should show what type each version is; A, B, R
- - 'mcman plugin install' Need to fix its handling of uknown versions

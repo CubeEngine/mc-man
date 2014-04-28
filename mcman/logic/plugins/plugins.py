@@ -161,7 +161,7 @@ def dependencies(server, plugins, v_type='Latest', deps=True):
                 plugin['versions'] = [ver]
                 break
         else:
-            plugin['versions'] = None
+            plugin['versions'] = []
 
     if deps:
         return _dependencies(server, plugins, v_type=v_type)
