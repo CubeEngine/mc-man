@@ -63,9 +63,15 @@ class ImportCommand(Command):
         self.parse_plugins(plugins, remote_plugins)
         self.parse_servers(servers, remote_servers)
 
-        self.p_main('Downloading servers and plugins'
-                    + ' to {}'.format(self.args.destination)
-                      if self.args.destination != './' else '')
+        self.p_main('Files to download:')
+        self.p_blank()
+        self.p_sub(common.list_names([i[0] for i in self.to_download]))
+        self.p_blank()
+
+        if not common.ask('Do you want to continue?',
+                          skip=self.args.no_confirm):
+            return
+
         prefix = '({{part:>{}}}/{}) '.format(
             len(str(len(self.to_download))), len(self.to_download))
         for i in range(len(self.to_download)):
@@ -82,7 +88,6 @@ class ImportCommand(Command):
                                        '/'.join(jar[0].split('/')[:-1]) + '/')
                 os.remove(destination)
                 print('Success')
-
 
     def parse_plugins(self, plugins, remote_plugins):
         """ Populate the to_download list with plugins to download. """
