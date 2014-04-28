@@ -1,2 +1,3 @@
  - 'mcman plugin update' should support --ignore
  - 'mcman plugin info' should show what type each version is; A, B, R
+ - Checking of installed plugins should not query bukget with empty values
