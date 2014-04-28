@@ -33,7 +33,6 @@ setup(
     license='GPLv3+',
     long_description=read('README.md'),
     url='https://github.com/CubeEngineDev/mc-man',
-    platform='Unix',
     packages=['mcman', 'mcman.commands', 'mcman.logic',
               'mcman.logic.plugins'],
     scripts=["bin/mcman"],
