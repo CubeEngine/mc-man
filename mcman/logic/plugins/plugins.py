@@ -148,8 +148,7 @@ def dependencies(server, plugins, v_type='Latest', deps=True):
             'value': plugins
         },
         fields=fields)
-    utils.remove_duplicate_plugins(results)
-    plugins = results
+    plugins = utils.remove_duplicate_plugins(results)
 
     for plugin in plugins:
         if not plugin['plugin_name'].lower() in versions:
@@ -374,6 +373,8 @@ def list_plugins(workers=4):
               'versions.md5,versions.slug')
 
     plugins = parse_installed_plugins(workers)
+    if plugins == []:
+        return []
 
     results = bukget.search(
         {
@@ -383,17 +384,18 @@ def list_plugins(workers=4):
         },
         fields=fields)
 
-    results += bukget.search(
-        {
-            'field': 'main',
-            'action': 'in',
-            'value': [plugin[1] for plugin in plugins]
-        }, {
-            'field': 'plugin_name',
-            'action': 'in',
-            'value': [plugin[2] for plugin in plugins]
-        },
-        fields=fields)
+    if len(results) < len(plugins):
+        results += bukget.search(
+            {
+                'field': 'main',
+                'action': 'in',
+                'value': [plugin[1] for plugin in plugins]
+            }, {
+                'field': 'plugin_name',
+                'action': 'in',
+                'value': [plugin[2] for plugin in plugins]
+            },
+            fields=fields)
 
     results = utils.remove_duplicate_plugins(results)
 
