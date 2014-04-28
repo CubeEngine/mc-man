@@ -46,6 +46,10 @@ def setup_import_command(sub_parsers, parent):
         help=('the json file contating the server and plugin information. '
               '"-" may be used to mark stdin'))
 
+    parser.add_argument(
+        'destination', default='./', nargs='?',
+        help='the destination folder. defaults to ./')
+
     return parser
 
 
@@ -67,6 +71,10 @@ def setup_export_command(sub_parsers, parent):
     parser.add_argument(
         '--types', default='plugins,servers',
         help='what to save. A comma separated list of "servers" and "plugins"')
+
+    parser.add_argument(
+        '--quiet', action='store_true',
+        help="don't print anything other than the result")
 
     return parser
 

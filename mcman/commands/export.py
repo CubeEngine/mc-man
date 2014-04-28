@@ -41,6 +41,9 @@ class ExportCommand(Command):
 
         args.types = args.types.split(',')
 
+        if args.quiet:
+            self.printer = lambda *a, **b: None
+
         self.run()
 
     def run(self):

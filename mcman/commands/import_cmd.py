@@ -24,6 +24,8 @@ as little as possible logic should go here.
 import json
 
 import os
+from sys import stdin
+
 import mcman.logic.servers as s_backend
 from mcman.logic.plugins import plugins as p_backend
 from mcman.logic import common
@@ -45,7 +47,9 @@ class ImportCommand(Command):
 
     def run(self):
         """ Run the command. """
-        self.p_main('Parsing file and finding plugins and servers')
+        if self.args.input is not stdin:
+            self.p_main('Parsing file and finding plugins and servers')
+
         document = json.loads('\n'.join(self.args.input))
 
         plugins = document['plugins']
@@ -59,13 +63,15 @@ class ImportCommand(Command):
         self.parse_plugins(plugins, remote_plugins)
         self.parse_servers(servers, remote_servers)
 
-        self.p_main('Downloading servers and plugins')
+        self.p_main('Downloading servers and plugins'
+                    + ' to {}'.format(self.args.destination)
+                      if self.args.destination != './' else '')
         prefix = '({{part:>{}}}/{}) '.format(
             len(str(len(self.to_download))), len(self.to_download))
         for i in range(len(self.to_download)):
             jar = self.to_download[i]
             this_prefix = prefix.format(part=i+1)
-            destination = jar[0]
+            destination = self.args.destination + '/' + jar[0]
             if jar[1].endswith('.zip'):
                 destination = jar[1].split('/')[-1]
             common.download(jar[1], destination=destination, checksum=jar[2],

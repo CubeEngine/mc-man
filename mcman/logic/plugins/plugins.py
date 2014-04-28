@@ -19,7 +19,7 @@
 import os
 import threading
 from queue import Queue
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 
 import bukget
 import yaml
@@ -305,16 +305,19 @@ def parse_installed_plugins_worker(jar_queue, result_queue):
 
         checksum = common.checksum_file(jar)
 
-        with ZipFile(jar, 'r') as zipped:
-            if 'plugin.yml' not in zipped.namelist():
-                continue
+        try:
+            with ZipFile(jar, 'r') as zipped:
+                if 'plugin.yml' not in zipped.namelist():
+                    continue
 
-            yml = yaml.load(zipped.read('plugin.yml').decode())
-            plugin_name = yml['name']
-            main = yml['main']
-            version = str(yml['version'])
+                yml = yaml.load(zipped.read('plugin.yml').decode())
+                plugin_name = yml['name']
+                main = yml['main']
+                version = str(yml['version'])
 
-            result_queue.put((checksum, main, plugin_name, version, jar))
+                result_queue.put((checksum, main, plugin_name, version, jar))
+        except BadZipFile:
+            print("    Could not read '{}'.".format(jar))
 
         jar_queue.task_done()
 
