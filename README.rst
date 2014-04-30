@@ -13,7 +13,7 @@ With *one* command you can update *all* your plugins. There is also features to
 export and import servers. They work by saving references to all plugins and
 server jars in a json-file, which can later be used to recreate the server.
 
-1.1 - Features
+Features
 --------
 
 * Update all plugins with one command
@@ -21,7 +21,7 @@ server jars in a json-file, which can later be used to recreate the server.
 * All downloads are checked with checksum
 * Download and update server jars.
 
-1.2 - Installing
+Installing
 ----------
 mc-man is programmed in Python for Linux. It can **only** run on Python 3.3 or
 newer. This might be a problem on some Linux distributions, but it should
@@ -48,7 +48,7 @@ installing using pip:
 If you install mc-man without pip, you will have to install these dependencies
 manually.
 
-1.3 - Usage
+Usage
 -----
 The base command for mc-man is ``mcman``, all of mc-man's functionality is
 accessible through that command. The command is expected to be run from the
@@ -84,7 +84,7 @@ documentation is included in the program, it can be accessed by adding
 ``--help`` at the end of any command or subcommand, for example:
 ``mcman p --help``, to get quick help for the ``plugin`` command.'
 
-1.3.1 - Often used commands
+Often used commands
 ~~~~~~~~~~~~~~~~~~~
 
 Here are some commands that are used often:
@@ -106,7 +106,7 @@ Here are some commands that are used often:
     To download a server, optionally a version from the specified channel, the
     specified version, or even a specific build.
 
-1.3.2 - Common optional arguments for all commands
+Common optional arguments for all commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These arguments can be used for all commands in mc-man, but they might not be
@@ -140,19 +140,19 @@ commands when an argument is not implemented.
     Will skip all confirmation. Works everywhere you are asked to confirm
     something in mc-man.
 
-1.3.3 - The server command
+The server command
 ~~~~~~~~~~~~~~~~~~
 
 Comprehensive documentation is coming, for now you are advised to use the built
 in help. For example ``mcman server --help`` or ``mcman server servers --help``
 
-1.3.4 - The plugin command
+The plugin command
 ~~~~~~~~~~~~~~~~~~
 
 Comprehensive documentation is coming, for now you are advised to use the built
 in help. For example ``mcman plugin --help`` or ``mcman plugin search --help``
 
-1.3.5 - The import command
+The import command
 ~~~~~~~~~~~~~~~~~~
 
 Comprehensive documentation is coming, for now you are advised to use the built
