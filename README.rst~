@@ -2,7 +2,7 @@
 mc-man
 ==========
 
-    *The Minecraft server jar and plugin manager, downloader and updater*
+    *The terminal based server jar and plugin manager, downloader and updater*
 
 mc-man is a terminal program for managing server jars and plugins for Minecraft
 servers. It is created with simplicity in mind, and aims to be the difinitive
