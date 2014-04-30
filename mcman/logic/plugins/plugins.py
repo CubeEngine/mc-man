@@ -393,7 +393,12 @@ def list_plugins(workers=4):
                 'field': 'main',
                 'action': 'in',
                 'value': [plugin[1] for plugin in plugins]
-            }, {
+            },
+            fields=fields)
+
+    if len(results) < len(plugins):
+        results += bukget.search(
+            {
                 'field': 'plugin_name',
                 'action': 'in',
                 'value': [plugin[2] for plugin in plugins]
