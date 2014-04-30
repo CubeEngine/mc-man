@@ -82,4 +82,26 @@ example: ``mcman plugin``. The commands can also be shortened to the first
 letter: ``mcman p``. In addition to this comprehensive documentation, a lighter
 documentation is included in the program, it can be accessed by adding
 ``--help`` at the end of any command or subcommand, for example:
-``mcman p --help``, to get quick help for the ``plugin`` command.
+``mcman p --help``, to get quick help for the ``plugin`` command.'
+
+Often used commands
+~~~~~~~~~~~~~~~~~~~
+
+Here are some commands that are used often:
+
+``mcman p download <plugin> [<plugin> ...]``
+    Download the plugins.
+
+``mcman p update``
+    To update all the plugins
+
+``mcman p list``
+    To list the installed plugins, and check if any are out of date.
+
+``mcman s identify <server.jar>``
+    To check what version and build a server jar is, and see if there are any
+    updates to it.
+
+``mcman s download <server> [<channel>] [<version>] [<build>]``
+    To download a server, optionally a version from the specified channel, the
+    specified version, or even a specific build.
