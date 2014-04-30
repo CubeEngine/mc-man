@@ -105,3 +105,39 @@ Here are some commands that are used often:
 ``mcman s download <server> [<channel>] [<version>] [<build>]``
     To download a server, optionally a version from the specified channel, the
     specified version, or even a specific build.
+
+Common optional arguments for all commands
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These arguments can be used for all commands in mc-man, but they might not be
+implemented where they are not useful. It is noted where they are not
+implemented on the commands themself.
+
+``-h`` or ``--help``
+    To show the help for the current sub command or command.
+
+``--version``
+    To print the version of mc-man before the command is executed. If the
+    command line is effectless without this argument, the help message will not
+    be printed, for example with ``mcman plugin --version`` only the version
+    will be printed before the program quits.
+
+``--use-agent <user agent>``
+    This argument changes what user agent mc-man reports to the online APIs it
+    uses(BukGet and SpaceGDN). It is not reccomended to change this for normal
+    use, as it gives good statistics to the author about the usage of mc-man.
+    However, if you are using mc-man in an auto running script, it is suggested
+    to change this.
+
+``--head [<size>]`` or ``--size [<size>]`` and ``--tail [<size>]``
+    These arguments will limit how many results that are returned. The usage
+    changes a bit between different commands, but the general rule is that
+    ``--tail`` will sort bottom -> up, and ``--head`` or ``--size`` will sort
+    top -> bottom. ``--head`` and ``--tail`` can be used without an argument to
+    use the default value 5.
+
+``--no-confirm``
+    Will skip all confirmation. Works everywhere you are asked to confirm
+    something in mc-man.
+
+
