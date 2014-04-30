@@ -5,15 +5,15 @@ mc-man
     *The Minecraft server jar and plugin manager, downloader and updater*
 
 mc-man is a terminal program for managing server jars and plugins for Minecraft
-servers. It is created with simplicity in mind, and aims to be the difinitive
-tool to use for server maintaince, for example when updating a server. mc-man
-can download and update spigot, craftbukkit, mcpc+, bungeecord and the mojang
+servers. It is created with simplicity in mind, and aims to be the definitive
+tool to use for server maintenance, for example when updating a server. mc-man
+can download and update Spigot, CraftBukkit, MCPC+, BungeeCord and the Mojang
 server. It can also download and update plugins, with regards to dependencies.
 With *one* command you can update *all* your plugins. There is also features to
 export and import servers. They work by saving references to all plugins and
 server jars in a json-file, which can later be used to recreate the server.
 
-Features
+1.1 - Features
 --------
 
 * Update all plugins with one command
@@ -21,7 +21,7 @@ Features
 * All downloads are checked with checksum
 * Download and update server jars.
 
-Installing
+1.2 - Installing
 ----------
 mc-man is programmed in Python for Linux. It can **only** run on Python 3.3 or
 newer. This might be a problem on some Linux distributions, but it should
@@ -48,10 +48,10 @@ installing using pip:
 If you install mc-man without pip, you will have to install these dependencies
 manually.
 
-Usage
+1.3 - Usage
 -----
 The base command for mc-man is ``mcman``, all of mc-man's functionality is
-accessable through that command. The command is expected to be run from the
+accessible through that command. The command is expected to be run from the
 root folder of the server. The functionality is divided into four sub commands:
 
 server
@@ -84,7 +84,7 @@ documentation is included in the program, it can be accessed by adding
 ``--help`` at the end of any command or subcommand, for example:
 ``mcman p --help``, to get quick help for the ``plugin`` command.'
 
-Often used commands
+1.3.1 - Often used commands
 ~~~~~~~~~~~~~~~~~~~
 
 Here are some commands that are used often:
@@ -106,12 +106,12 @@ Here are some commands that are used often:
     To download a server, optionally a version from the specified channel, the
     specified version, or even a specific build.
 
-Common optional arguments for all commands
+1.3.2 - Common optional arguments for all commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 These arguments can be used for all commands in mc-man, but they might not be
-implemented where they are not useful. It is noted where they are not
-implemented on the commands themself.
+implemented where they are not useful. It is noted in the documentation for the
+commands when an argument is not implemented.
 
 ``-h`` or ``--help``
     To show the help for the current sub command or command.
@@ -124,7 +124,7 @@ implemented on the commands themself.
 
 ``--use-agent <user agent>``
     This argument changes what user agent mc-man reports to the online APIs it
-    uses(BukGet and SpaceGDN). It is not reccomended to change this for normal
+    uses(BukGet and SpaceGDN). It is not recommended to change this for normal
     use, as it gives good statistics to the author about the usage of mc-man.
     However, if you are using mc-man in an auto running script, it is suggested
     to change this.
@@ -140,4 +140,26 @@ implemented on the commands themself.
     Will skip all confirmation. Works everywhere you are asked to confirm
     something in mc-man.
 
+1.3.3 - The server command
+~~~~~~~~~~~~~~~~~~
 
+Comprehensive documentation is coming, for now you are advised to use the built
+in help. For example ``mcman server --help`` or ``mcman server servers --help``
+
+1.3.4 - The plugin command
+~~~~~~~~~~~~~~~~~~
+
+Comprehensive documentation is coming, for now you are advised to use the built
+in help. For example ``mcman plugin --help`` or ``mcman plugin search --help``
+
+1.3.5 - The import command
+~~~~~~~~~~~~~~~~~~
+
+Comprehensive documentation is coming, for now you are advised to use the built
+in help. For example ``mcman import --help``
+
+The export command
+~~~~~~~~~~~~~~~~~~
+
+Comprehensive documentation is coming, for now you are advised to use the built
+in help. For example ``mcman export --help``
