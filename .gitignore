@@ -42,3 +42,5 @@ nosetests.xml
 
 coverage.xml
 *.sublime-workspace
+
+**/*~
