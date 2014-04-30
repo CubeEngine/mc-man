@@ -121,6 +121,11 @@ def builds(server, channel, version, size):
 
 def get_id_raise_valueerror(name, jar=None, channel=None, version=None,
                             build=None):
+    """ Get the id for the jar, channel, version or build.
+
+    A ValueError is raised if it is not found.
+
+    """
     result = spacegdn.get_id(jar=jar, channel=channel, version=version,
                              build=build)
     if result == -1:
