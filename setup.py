@@ -29,9 +29,10 @@ setup(
     version=mcman.__version__,
     author=mcman.__author__,
     author_email='mail@totokaka.io',
-    description='A Minecraft server jar and plugins manager',
+    description=('The Minecraft server jar and plugin manager, downloader '
+                 'and updater'),
     license='GPLv3+',
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     url='https://github.com/CubeEngineDev/mc-man',
     packages=['mcman', 'mcman.commands', 'mcman.logic',
               'mcman.logic.plugins'],
